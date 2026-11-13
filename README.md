@@ -22,10 +22,12 @@ Dự án hoàn chỉnh đạt chuẩn Rubric môn học **Khoa học Dữ liệu
 
 ```text
 ADY201m-Project-Completed/
-├── run_all_pipeline.py                     # Entry point duy nhất chạy toàn bộ 7 giai đoạn
 ├── requirements.txt                        # Danh mục thư viện Python yêu cầu
 ├── README.md                               # Tài liệu hướng dẫn và báo cáo kết quả
-├── Defense_Checklist.md                   # Bảng kiểm tra 100/100 điểm Rubric
+├── Final_Report.docx                       # File báo cáo Word tại thư mục gốc
+├── Final_Report.pdf                        # File báo cáo PDF tại thư mục gốc
+├── Presentation.pptx                       # File slide bảo vệ tại thư mục gốc
+├── Q&A_Handbook.docx                       # File Q&A phản biện tại thư mục gốc
 │
 ├── Phase 1 - Data Collection/
 │   ├── crawl_vnexpress.py                  # Script cào đa luồng 16 chuyên mục RSS
@@ -47,7 +49,7 @@ ADY201m-Project-Completed/
 │
 ├── Phase 4 - SQL Analysis/
 │   ├── run_sql_analysis.py                 # Khởi tạo CSDL SQLite & chạy 6 truy vấn
-│   ├── vnexpress_analysis.db               # Cơ sở dữ liệu quan hệ SQLite
+│   ├── vnexpress_analysis.db               # Cơ sở dữ liệu quan hệ SQLite (3 bảng, 18 cột)
 │   └── sql_analysis_results.json           # Kết quả thực thi 6 câu truy vấn SQL
 │
 ├── Phase 5 - Classification Modeling/
@@ -66,22 +68,17 @@ ADY201m-Project-Completed/
 │   ├── regression_comparison_bar.png       # So sánh sai số các mô hình
 │   └── regression_metrics.json             # Bảng đo lường MAE, RMSE, R²
 │
-├── Phase 7 - Documentation & Reports/
-│   ├── build_reports.py                    # Script tự động tạo DOCX, PPTX và PDF
-│   ├── Final_Report.docx                   # Báo cáo tổng kết 14 mục chuẩn học thuật
-│   ├── Final_Report.pdf                    # Bản xuất PDF chính thức
-│   ├── Presentation.pptx                   # Bộ slide thuyết trình bảo vệ đồ án
-│   └── Q&A_Handbook.docx                   # Cẩm nang 10 câu hỏi đáp phản biện
-│
-├── Final_Report.docx                       # File báo cáo tại thư mục gốc
-├── Final_Report.pdf                        # File PDF tại thư mục gốc
-├── Presentation.pptx                       # File slide tại thư mục gốc
-└── Q&A_Handbook.docx                       # File Q&A tại thư mục gốc
+└── Phase 7 - Documentation & Reports/
+    ├── build_reports.py                    # Script tự động tạo DOCX, PPTX và PDF
+    ├── Final_Report.docx                   # Báo cáo tổng kết 14 mục chuẩn học thuật
+    ├── Final_Report.pdf                    # Bản xuất PDF chính thức
+    ├── Presentation.pptx                   # Bộ slide thuyết trình bảo vệ đồ án
+    └── Q&A_Handbook.docx                   # Cẩm nang 10 câu hỏi đáp phản biện
 ```
 
 ---
 
-## 3. HƯỚNG DẪN THỰC THI (CHO BẢN CLONE MỚI)
+## 3. HƯỚNG DẪN THỰC THI THEO TỪNG GIAI ĐOẠN
 
 ### Bước 1: Clone repository và cài đặt thư viện
 ```bash
@@ -91,12 +88,30 @@ pip install -r requirements.txt
 pip install python-docx python-pptx docx2pdf reportlab
 ```
 
-### Bước 2: Chạy toàn bộ quy trình tự động từ đầu đến cuối
-Chỉ cần thực thi một lệnh duy nhất:
+### Bước 2: Thực thi từng giai đoạn độc lập
+
 ```bash
-python run_all_pipeline.py
+# Giai đoạn 1: Thu thập dữ liệu tươi (tùy chọn cào mới nếu cần)
+python "Phase 1 - Data Collection\crawl_vnexpress.py"
+
+# Giai đoạn 2: Tiền xử lý và kiểm định chất lượng dữ liệu
+python "Phase 2 - Data Preprocessing & Quality\clean_and_validate.py"
+
+# Giai đoạn 3: Phân tích khám phá dữ liệu trực quan (EDA)
+python "Phase 3 - Exploratory Data Analysis\run_eda.py"
+
+# Giai đoạn 4: Khởi tạo CSDL SQLite và thực thi truy vấn SQL quan hệ
+python "Phase 4 - SQL Analysis\run_sql_analysis.py"
+
+# Giai đoạn 5: Huấn luyện và đánh giá mô hình phân loại văn bản
+python "Phase 5 - Classification Modeling\train_classifier.py"
+
+# Giai đoạn 6: Huấn luyện và đánh giá mô hình hồi quy dung lượng bài
+python "Phase 6 - Regression Modeling\train_regression.py"
+
+# Giai đoạn 7: Xuất bản tài liệu Báo cáo Word, Slide PPTX và Báo cáo PDF
+python "Phase 7 - Documentation & Reports\build_reports.py"
 ```
-*Lệnh này sẽ tuần tự kiểm tra dữ liệu, tiền xử lý, xuất biểu đồ EDA, thực thi SQL, huấn luyện phân loại, huấn luyện hồi quy và tự động biên dịch lại toàn bộ Báo cáo DOCX, Slide PPTX và Báo cáo PDF trong khoảng ~40 giây.*
 
 ---
 
