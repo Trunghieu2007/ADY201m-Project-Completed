@@ -7,7 +7,7 @@ def run_sql_pipeline(clean_path=None, db_path=None, output_json_path=None):
     """Khởi tạo cơ sở dữ liệu SQLite và thực thi bộ truy vấn phân tích SQL chuẩn mực."""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if clean_path is None:
-        clean_path = os.path.join(base_dir, "data", "processed", "vnexpress_clean.json")
+        clean_path = os.path.join(base_dir, "Phase 2 - Data Preprocessing & Quality", "vnexpress_clean.json")
     if db_path is None:
         db_path = os.path.join(base_dir, "Phase 4 - SQL Analysis", "vnexpress_analysis.db")
     if output_json_path is None:

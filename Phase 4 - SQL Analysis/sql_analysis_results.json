@@ -3,10 +3,10 @@
     "id": "Q1",
     "question": "Tổng số lượng bài viết đã được làm sạch và lưu trữ trong CSDL?",
     "sql": "SELECT COUNT(*) AS total_articles FROM VnExpress_Articles;",
-    "interpretation": "Cơ sở dữ liệu đang lưu trữ đầy đủ 659 bài viết hợp lệ đã qua quy trình sàng lọc chất lượng đợt thu thập tươi.",
+    "interpretation": "Cơ sở dữ liệu đang lưu trữ đầy đủ 655 bài viết hợp lệ đã qua quy trình sàng lọc chất lượng đợt thu thập tươi.",
     "sample_data": [
       {
-        "total_articles": 659
+        "total_articles": 655
       }
     ]
   },
@@ -46,7 +46,7 @@
       },
       {
         "category": "Bất động sản",
-        "article_count": 48
+        "article_count": 46
       },
       {
         "category": "Sức khỏe",
@@ -73,8 +73,8 @@
       },
       {
         "category": "Bất động sản",
-        "total_articles": 48,
-        "avg_words": 1011.7,
+        "total_articles": 46,
+        "avg_words": 1003.1,
         "min_words": 414,
         "max_words": 2548
       },
@@ -222,8 +222,8 @@
     "sample_data": [
       {
         "publish_date": "2026-11-07",
-        "daily_articles": 25,
-        "avg_daily_words": 726.8
+        "daily_articles": 21,
+        "avg_daily_words": 699.3
       },
       {
         "publish_date": "2026-11-08",
@@ -265,8 +265,8 @@
     "sample_data": [
       {
         "author": "Mộc Trà",
-        "count_articles": 18,
-        "avg_length": 268.2
+        "count_articles": 17,
+        "avg_length": 257.5
       },
       {
         "author": "Hồng Duy",
@@ -294,11 +294,6 @@
         "avg_length": 146.1
       },
       {
-        "author": "Bích Phương",
-        "count_articles": 10,
-        "avg_length": 1836.5
-      },
-      {
         "author": "An Khang",
         "count_articles": 10,
         "avg_length": 1126.3
@@ -312,6 +307,11 @@
         "author": "Phạm Giang",
         "count_articles": 9,
         "avg_length": 716.8
+      },
+      {
+        "author": "Phương Thảo",
+        "count_articles": 9,
+        "avg_length": 702.3
       }
     ]
   }

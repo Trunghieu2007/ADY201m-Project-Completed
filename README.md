@@ -27,15 +27,13 @@ ADY201m-Project-Completed/
 ├── README.md                               # Tài liệu hướng dẫn và báo cáo kết quả
 ├── Defense_Checklist.md                   # Bảng kiểm tra 100/100 điểm Rubric
 │
-├── data/
-│   ├── raw/vnexpress_raw.json              # Dữ liệu cào thô đợt tươi mới (672 bài)
-│   └── processed/vnexpress_clean.json      # Dữ liệu đã làm sạch & chuẩn hóa (659 bài)
-│
 ├── Phase 1 - Data Collection/
-│   └── crawl_vnexpress.py                  # Script cào đa luồng 16 chuyên mục RSS
+│   ├── crawl_vnexpress.py                  # Script cào đa luồng 16 chuyên mục RSS
+│   └── vnexpress_raw.json                  # [ĐẦU RA GIAI ĐOẠN 1] Dữ liệu cào thô (672 bài)
 │
 ├── Phase 2 - Data Preprocessing & Quality/
 │   ├── clean_and_validate.py               # Làm sạch, kiểm định rỗng/khuyết/trùng lặp
+│   ├── vnexpress_clean.json                # [ĐẦU RA GIAI ĐOẠN 2] Dữ liệu đã làm sạch & chuẩn hóa
 │   ├── data_quality_report.json            # Thống kê chi tiết chất lượng dữ liệu
 │   └── data_cleaning_log.txt               # Nhật ký loại bỏ bản ghi
 │

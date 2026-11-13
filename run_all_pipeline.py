@@ -32,7 +32,7 @@ def main():
     # Giai đoạn 1: Thu thập dữ liệu
     log_step(1, "Thu thập Dữ liệu Tươi từ VnExpress (Data Collection)")
     script_p1 = os.path.join(base_dir, "Phase 1 - Data Collection", "crawl_vnexpress.py")
-    raw_json = os.path.join(base_dir, "data", "raw", "vnexpress_raw.json")
+    raw_json = os.path.join(base_dir, "Phase 1 - Data Collection", "vnexpress_raw.json")
     if not os.path.exists(raw_json):
         run_script(script_p1, "Cào dữ liệu tươi VnExpress")
     else:

@@ -95,7 +95,7 @@ def generate_final_report_docx(base_dir=None):
         f"Dữ liệu được thu thập trực tiếp thông qua script tự động (Phase 1) quét toàn bộ 16 RSS feeds của VnExpress trong "
         f"cửa sổ {dq_data['crawl_window_days']} ngày gần nhất. Hệ thống crawler sử dụng đa luồng (ThreadPoolExecutor), trích xuất chuẩn xác "
         f"9 trường thông tin bao gồm: article_id, title, description, content, author, published_at, category, subcategory và url. "
-        f"Tổng số bài viết thô thu thập được: {dq_data['total_raw_records']} bài báo được lưu độc lập tại data/raw/vnexpress_raw.json."
+        f"Tổng số bài viết thô thu thập được: {dq_data['total_raw_records']} bài báo được lưu độc lập tại Phase 1 - Data Collection/vnexpress_raw.json."
     )
 
     # 3. KIỂM ĐỊNH CHẤT LƯỢNG VÀ TIỀN XỬ LÝ
@@ -104,7 +104,7 @@ def generate_final_report_docx(base_dir=None):
         f"Hệ thống thực hiện sàng lọc nghiêm ngặt theo các tiêu chí: bắt buộc có tiêu đề, nội dung trên {50} từ, đúng định dạng "
         f"bài báo (og_type=article), không trùng lặp URL/ID và nằm đúng khung thời gian thu thập. "
         f"Hệ thống đã loại bỏ {dq_data['removed_records_count']} bài không đạt chuẩn (chủ yếu là phóng sự ảnh/video clips không có văn bản đọc). "
-        f"Tập dữ liệu chuẩn hóa cuối cùng đạt chính xác {dq_data['total_clean_records']} bài báo sạch, lưu trữ tại data/processed/vnexpress_clean.json."
+        f"Tập dữ liệu chuẩn hóa cuối cùng đạt chính xác {dq_data['total_clean_records']} bài báo sạch, lưu trữ tại Phase 2 - Data Preprocessing & Quality/vnexpress_clean.json."
     )
 
     table_dq = doc.add_table(rows=7, cols=2)
@@ -117,8 +117,8 @@ def generate_final_report_docx(base_dir=None):
         set_cell_background(cell, "E2E9F0")
 
     dq_rows = [
-        ("Tổng bản ghi thô (data/raw/vnexpress_raw.json)", f"{dq_data['total_raw_records']} bài"),
-        ("Tổng bản ghi sạch chuẩn (data/processed/vnexpress_clean.json)", f"{dq_data['total_clean_records']} bài"),
+        ("Tổng bản ghi thô (Phase 1 - Data Collection/vnexpress_raw.json)", f"{dq_data['total_raw_records']} bài"),
+        ("Tổng bản ghi sạch chuẩn (Phase 2 - Data Preprocessing & Quality/vnexpress_clean.json)", f"{dq_data['total_clean_records']} bài"),
         ("Số bài loại bỏ & lý do", f"{dq_data['removed_records_count']} bài (Lọc bài ngắn < 50 từ, bài media phi văn bản)"),
         ("Kiểm tra giá trị Null (Null Values)", "0 bản ghi ở tất cả các trường (100% đầy đủ)"),
         ("Kiểm tra chuỗi rỗng (Empty Strings)", "0 bản ghi ở tất cả các trường (100% hợp lệ)"),

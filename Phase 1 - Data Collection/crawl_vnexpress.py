@@ -186,10 +186,10 @@ def collect_rss_urls():
     return urls
 
 def crawl_fresh_batch(output_path=None):
-    """Cào dữ liệu một đợt bài viết mới hoàn toàn và lưu ra file JSON thô."""
+    """Cào dữ liệu một đợt bài viết mới hoàn toàn và lưu ra file JSON thô trong thư mục Phase 1."""
     if output_path is None:
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_path = os.path.join(base_dir, "data", "raw", "vnexpress_raw.json")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        output_path = os.path.join(base_dir, "vnexpress_raw.json")
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     links_dict = collect_rss_urls()

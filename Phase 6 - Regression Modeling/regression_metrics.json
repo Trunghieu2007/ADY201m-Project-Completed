@@ -23,25 +23,25 @@
     "cat_Đời sống"
   ],
   "target_variable": "word_count",
-  "train_samples_count": 527,
-  "test_samples_count": 132,
+  "train_samples_count": 524,
+  "test_samples_count": 131,
   "models_evaluation": {
     "Linear Regression": {
-      "MAE": 306.44,
-      "RMSE": 452.06,
-      "R2": 0.1606
+      "MAE": 306.43,
+      "RMSE": 441.15,
+      "R2": 0.1552
     },
     "Ridge Regression": {
-      "MAE": 307.28,
-      "RMSE": 452.99,
-      "R2": 0.1572
+      "MAE": 306.18,
+      "RMSE": 441.09,
+      "R2": 0.1554
     },
     "Random Forest Regressor": {
-      "MAE": 314.07,
-      "RMSE": 470.74,
-      "R2": 0.0898
+      "MAE": 322.82,
+      "RMSE": 478.69,
+      "R2": 0.0053
     }
   },
-  "best_model": "Linear Regression",
+  "best_model": "Ridge Regression",
   "academic_validity_note": "Dung lượng bài báo chí phụ thuộc trực tiếp vào tính thời sự của sự việc thực tế và phong cách hành văn của phóng viên. Các siêu dữ liệu (giờ xuất bản, ngày đăng, chuyên mục) chỉ giải thích được một phần phương sai (R² ~0.10 - 0.15). Kết quả này phản ánh trung thực bản chất dữ liệu khách quan, tuyệt đối không bị rò rỉ dữ liệu (No Data Leakage)."
 }

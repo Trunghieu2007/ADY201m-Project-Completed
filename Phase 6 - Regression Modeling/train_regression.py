@@ -14,7 +14,7 @@ def train_and_evaluate_regression(clean_path=None, output_dir=None):
     """Huấn luyện và đánh giá mô hình hồi quy dự đoán dung lượng bài báo (Word Count) từ Metadata."""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if clean_path is None:
-        clean_path = os.path.join(base_dir, "data", "processed", "vnexpress_clean.json")
+        clean_path = os.path.join(base_dir, "Phase 2 - Data Preprocessing & Quality", "vnexpress_clean.json")
     if output_dir is None:
         output_dir = os.path.join(base_dir, "Phase 6 - Regression Modeling")
     os.makedirs(output_dir, exist_ok=True)

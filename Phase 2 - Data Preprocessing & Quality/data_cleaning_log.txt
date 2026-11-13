@@ -1,13 +1,14 @@
 === NHẬT KÝ SÀNG LỌC & KIỂM ĐỊNH CHẤT LƯỢNG DỮ LIỆU TƯƠI (VNEXPRESS) ===
-Thời gian tạo nhật ký: 2026-11-13 23:56:36
-Khoảng thời gian thu thập: 2026-11-07 00:00:00 đến 2026-11-13 22:21:00
+Thời gian tạo nhật ký: 2026-11-14 00:11:38
+Khoảng thời gian thu thập: 2026-11-07 06:00:00 đến 2026-11-13 22:21:00
 
 1. Tổng số bài viết thô (raw): 672 bài
-2. Tổng số bài sau làm sạch (clean): 659 bài
-3. Số lượng bài bị loại trừ: 13 bài
+2. Tổng số bài sau làm sạch (clean): 655 bài
+3. Số lượng bài bị loại trừ: 17 bài
 4. Lý do loại trừ chi tiết:
    - Nội dung quá ngắn (< 50 từ, video/photo story): 7 bài
    - Tiêu đề rỗng hoặc chỉ chứa khoảng trắng: 2 bài
+   - Ngoài phạm vi 7 ngày thu thập: 4 bài
    - Định dạng phi văn bản (og_type: website): 4 bài
 
 5. Kiểm định tính toàn vẹn (Data Integrity Verification):
@@ -16,8 +17,8 @@ Khoảng thời gian thu thập: 2026-11-07 00:00:00 đến 2026-11-13 22:21:00
    - Giá trị Null: 0 ở tất cả các trường
    - Chuỗi rỗng: 0 ở tất cả các trường
 
-6. Số lượng tác giả độc nhất phân tích được: 227 tác giả/bút danh
+6. Số lượng tác giả độc nhất phân tích được: 226 tác giả/bút danh
 7. Thống kê độ dài bài viết:
    - Ngắn nhất: 61 từ
-   - Trung bình: 779.86 từ
+   - Trung bình: 779.3 từ
    - Dài nhất: 4139 từ

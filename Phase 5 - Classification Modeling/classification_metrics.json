@@ -1,11 +1,11 @@
 {
-  "dataset_total_clean_samples": 659,
-  "modeling_samples_used": 658,
+  "dataset_total_clean_samples": 655,
+  "modeling_samples_used": 654,
   "excluded_sparse_categories": {
     "Tin tức": 1
   },
-  "train_samples_count": 526,
-  "test_samples_count": 132,
+  "train_samples_count": 523,
+  "test_samples_count": 131,
   "num_classes": 16,
   "classes": [
     "Bất động sản",
@@ -27,64 +27,64 @@
   ],
   "models_evaluation": {
     "Multinomial Naive Bayes": {
-      "accuracy": 0.7652,
-      "precision_weighted": 0.7976,
-      "recall_weighted": 0.7652,
-      "f1_macro": 0.7316,
-      "f1_weighted": 0.7546
+      "accuracy": 0.771,
+      "precision_weighted": 0.7651,
+      "recall_weighted": 0.771,
+      "f1_macro": 0.711,
+      "f1_weighted": 0.7519
     },
     "Decision Tree": {
-      "accuracy": 0.4697,
-      "precision_weighted": 0.5302,
-      "recall_weighted": 0.4697,
-      "f1_macro": 0.4746,
-      "f1_weighted": 0.4755
+      "accuracy": 0.5267,
+      "precision_weighted": 0.5246,
+      "recall_weighted": 0.5267,
+      "f1_macro": 0.5094,
+      "f1_weighted": 0.5146
     },
     "Logistic Regression": {
-      "accuracy": 0.7652,
-      "precision_weighted": 0.8136,
-      "recall_weighted": 0.7652,
-      "f1_macro": 0.7407,
-      "f1_weighted": 0.7547
+      "accuracy": 0.7328,
+      "precision_weighted": 0.6971,
+      "recall_weighted": 0.7328,
+      "f1_macro": 0.6558,
+      "f1_weighted": 0.7003
     },
     "Linear SVM": {
-      "accuracy": 0.8409,
-      "precision_weighted": 0.8613,
-      "recall_weighted": 0.8409,
-      "f1_macro": 0.8321,
-      "f1_weighted": 0.8403
+      "accuracy": 0.8321,
+      "precision_weighted": 0.8297,
+      "recall_weighted": 0.8321,
+      "f1_macro": 0.7789,
+      "f1_weighted": 0.8166
     }
   },
   "best_model": "Linear SVM",
   "detailed_classification_report": {
     "Bất động sản": {
-      "precision": 0.7692307692307693,
+      "precision": 0.8181818181818182,
       "recall": 1.0,
-      "f1-score": 0.8695652173913043,
-      "support": 10.0
+      "f1-score": 0.9,
+      "support": 9.0
     },
     "Du lịch": {
       "precision": 1.0,
-      "recall": 0.8,
-      "f1-score": 0.8888888888888888,
+      "recall": 0.6,
+      "f1-score": 0.75,
       "support": 5.0
     },
     "Giáo dục": {
-      "precision": 1.0,
-      "recall": 0.8571428571428571,
-      "f1-score": 0.9230769230769231,
+      "precision": 0.5833333333333334,
+      "recall": 1.0,
+      "f1-score": 0.7368421052631579,
       "support": 7.0
     },
     "Giải trí": {
-      "precision": 0.5625,
-      "recall": 0.8181818181818182,
-      "f1-score": 0.6666666666666666,
+      "precision": 0.7142857142857143,
+      "recall": 0.9090909090909091,
+      "f1-score": 0.8,
       "support": 11.0
     },
     "Khoa học công nghệ": {
-      "precision": 0.9,
-      "recall": 0.9,
-      "f1-score": 0.9,
+      "precision": 0.8888888888888888,
+      "recall": 0.8,
+      "f1-score": 0.8421052631578947,
       "support": 10.0
     },
     "Kinh doanh": {
@@ -94,27 +94,27 @@
       "support": 10.0
     },
     "Pháp luật": {
-      "precision": 0.9166666666666666,
+      "precision": 1.0,
       "recall": 0.9166666666666666,
-      "f1-score": 0.9166666666666666,
+      "f1-score": 0.9565217391304348,
       "support": 12.0
     },
     "Sức khỏe": {
-      "precision": 0.8571428571428571,
-      "recall": 0.8571428571428571,
-      "f1-score": 0.8571428571428571,
-      "support": 7.0
+      "precision": 0.7272727272727273,
+      "recall": 1.0,
+      "f1-score": 0.8421052631578947,
+      "support": 8.0
     },
     "Thư giãn": {
       "precision": 1.0,
-      "recall": 0.5,
-      "f1-score": 0.6666666666666666,
-      "support": 6.0
+      "recall": 0.8,
+      "f1-score": 0.8888888888888888,
+      "support": 5.0
     },
     "Thế giới": {
-      "precision": 0.9,
+      "precision": 0.75,
       "recall": 0.9,
-      "f1-score": 0.9,
+      "f1-score": 0.8181818181818182,
       "support": 10.0
     },
     "Thể thao": {
@@ -124,15 +124,15 @@
       "support": 11.0
     },
     "Thời sự": {
-      "precision": 0.8888888888888888,
+      "precision": 1.0,
       "recall": 0.7272727272727273,
-      "f1-score": 0.8,
+      "f1-score": 0.8421052631578947,
       "support": 11.0
     },
     "Tâm sự": {
-      "precision": 0.75,
+      "precision": 0.8571428571428571,
       "recall": 1.0,
-      "f1-score": 0.8571428571428571,
+      "f1-score": 0.9230769230769231,
       "support": 6.0
     },
     "Xe": {
@@ -142,29 +142,29 @@
       "support": 6.0
     },
     "Ý kiến": {
-      "precision": 0.75,
-      "recall": 0.75,
-      "f1-score": 0.75,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
       "support": 4.0
     },
     "Đời sống": {
-      "precision": 0.75,
-      "recall": 0.5,
-      "f1-score": 0.6,
+      "precision": 0.6666666666666666,
+      "recall": 0.3333333333333333,
+      "f1-score": 0.4444444444444444,
       "support": 6.0
     },
-    "accuracy": 0.8409090909090909,
+    "accuracy": 0.8320610687022901,
     "macro avg": {
-      "precision": 0.861903807997558,
-      "recall": 0.8272186147186147,
-      "f1-score": 0.8320862426411625,
-      "support": 132.0
+      "precision": 0.7969877344877345,
+      "recall": 0.7934659090909091,
+      "f1-score": 0.778864677942195,
+      "support": 131.0
     },
     "weighted avg": {
-      "precision": 0.8612828144078144,
-      "recall": 0.8409090909090909,
-      "f1-score": 0.8402540166842226,
-      "support": 132.0
+      "precision": 0.8296624918762324,
+      "recall": 0.8320610687022901,
+      "f1-score": 0.8165977382870844,
+      "support": 131.0
     }
   }
 }

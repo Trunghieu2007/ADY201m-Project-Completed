@@ -12,15 +12,18 @@ FILTER_DAYS = 7
 
 def clean_and_validate_data(raw_path=None, clean_output_path=None, quality_report_path=None, log_path=None):
     """Làm sạch, chuẩn hóa và kiểm định chất lượng toàn diện tập dữ liệu bài viết VnExpress."""
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    phase2_dir = os.path.dirname(os.path.abspath(__file__))
+    phase1_dir = os.path.join(project_dir, "Phase 1 - Data Collection")
+
     if raw_path is None:
-        raw_path = os.path.join(base_dir, "data", "raw", "vnexpress_raw.json")
+        raw_path = os.path.join(phase1_dir, "vnexpress_raw.json")
     if clean_output_path is None:
-        clean_output_path = os.path.join(base_dir, "data", "processed", "vnexpress_clean.json")
+        clean_output_path = os.path.join(phase2_dir, "vnexpress_clean.json")
     if quality_report_path is None:
-        quality_report_path = os.path.join(base_dir, "Phase 2 - Data Preprocessing & Quality", "data_quality_report.json")
+        quality_report_path = os.path.join(phase2_dir, "data_quality_report.json")
     if log_path is None:
-        log_path = os.path.join(base_dir, "Phase 2 - Data Preprocessing & Quality", "data_cleaning_log.txt")
+        log_path = os.path.join(phase2_dir, "data_cleaning_log.txt")
 
     os.makedirs(os.path.dirname(clean_output_path), exist_ok=True)
     os.makedirs(os.path.dirname(quality_report_path), exist_ok=True)

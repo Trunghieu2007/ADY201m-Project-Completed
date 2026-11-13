@@ -9,7 +9,7 @@ def load_data(clean_path=None):
     """Nạp tập dữ liệu bài viết sạch và tạo các biến phái sinh cho EDA."""
     if clean_path is None:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        clean_path = os.path.join(base_dir, "data", "processed", "vnexpress_clean.json")
+        clean_path = os.path.join(base_dir, "Phase 2 - Data Preprocessing & Quality", "vnexpress_clean.json")
     with open(clean_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     df = pd.DataFrame(data)

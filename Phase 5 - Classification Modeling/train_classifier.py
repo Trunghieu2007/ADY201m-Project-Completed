@@ -17,7 +17,7 @@ def train_and_evaluate_classifiers(clean_path=None, output_dir=None):
     """Huấn luyện và so sánh đa mô hình phân loại thể loại bài báo (Category Classification)."""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if clean_path is None:
-        clean_path = os.path.join(base_dir, "data", "processed", "vnexpress_clean.json")
+        clean_path = os.path.join(base_dir, "Phase 2 - Data Preprocessing & Quality", "vnexpress_clean.json")
     if output_dir is None:
         output_dir = os.path.join(base_dir, "Phase 5 - Classification Modeling")
     os.makedirs(output_dir, exist_ok=True)
