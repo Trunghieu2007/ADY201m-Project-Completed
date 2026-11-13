@@ -13,7 +13,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 REQUEST_DELAY = 0.5
 TIMEOUT = 12
-CRAWL_DAYS = 7   # Phạm vi lấy bài: 7 ngày gần nhất tính từ thời điểm chạy
+CRAWL_DAYS = 1   # Phạm vi lấy bài: 7 ngày gần nhất tính từ thời điểm chạy
 
 HEADERS = {
     "User-Agent": (

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-FILTER_DAYS = 7
+FILTER_DAYS = 1
 MIN_WORD_COUNT = 50
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

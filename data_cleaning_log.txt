@@ -1,0 +1,38 @@
+=== NHẬT KÝ LỌC VÀ LÀM SẠCH DỮ LIỆU VNEXPRESS ===
+Thời gian tạo báo cáo: 2026-11-13 23:35:57
+
+1. Tổng số bản ghi thô (vnexpress_raw.json): 859
+2. Tổng số bản ghi sau làm sạch (vnexpress_data.json): 844
+3. Số bản ghi bị loại bỏ: 15
+4. Lý do loại bỏ quy chuẩn:
+   - Thiếu tiêu đề (title rỗng hoặc null)
+   - Không phải bài báo định dạng văn bản (og_type khác 'article'/'unknown')
+   - Nội dung bài viết quá ngắn (< 50 từ, bài ảnh/video không có bài đọc)
+   - Trùng lặp liên kết URL hoặc ID bài viết
+
+5. Thống kê số lượng từ sau làm sạch:
+   - Tối thiểu: 59 từ
+   - Trung bình: 759.2 từ
+   - Tối đa: 3084 từ
+   - Độ lệch chuẩn: 429.76 từ
+
+6. Phân bố chuyên mục (19 chuyên mục):
+   - Thời sự: 61 bài
+   - Kinh doanh: 61 bài
+   - Pháp luật: 60 bài
+   - Sức khỏe: 59 bài
+   - Thế giới: 58 bài
+   - Giải trí: 58 bài
+   - Thể thao: 58 bài
+   - Khoa học công nghệ: 58 bài
+   - Bất động sản: 57 bài
+   - Xe: 55 bài
+   - Giáo dục: 51 bài
+   - Du lịch: 48 bài
+   - Tâm sự: 42 bài
+   - Thư giãn: 41 bài
+   - Đời sống: 39 bài
+   - Ý kiến: 34 bài
+   - Mẹo tư vấn: 2 bài
+   - Tin tức: 1 bài
+   - Marathon: 1 bài

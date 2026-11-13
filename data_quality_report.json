@@ -1,0 +1,52 @@
+{
+  "total_raw_records": 859,
+  "total_clean_records": 844,
+  "removed_records": 15,
+  "missing_values_clean": {
+    "article_id": 0,
+    "title": 0,
+    "description": 0,
+    "content": 0,
+    "author": 0,
+    "published_at": 0,
+    "category": 0,
+    "subcategory": 0,
+    "url": 0,
+    "word_count": 0
+  },
+  "duplicate_clean_ids": 0,
+  "duplicate_clean_urls": 0,
+  "categories_count": 19,
+  "categories_distribution": {
+    "Thời sự": 61,
+    "Kinh doanh": 61,
+    "Pháp luật": 60,
+    "Sức khỏe": 59,
+    "Thế giới": 58,
+    "Giải trí": 58,
+    "Thể thao": 58,
+    "Khoa học công nghệ": 58,
+    "Bất động sản": 57,
+    "Xe": 55,
+    "Giáo dục": 51,
+    "Du lịch": 48,
+    "Tâm sự": 42,
+    "Thư giãn": 41,
+    "Đời sống": 39,
+    "Ý kiến": 34,
+    "Mẹo tư vấn": 2,
+    "Tin tức": 1,
+    "Marathon": 1
+  },
+  "word_count_stats": {
+    "min": 59,
+    "max": 3084,
+    "mean": 759.2,
+    "median": 670.5,
+    "std": 429.76
+  },
+  "date_range": {
+    "earliest": "2026-11-05 07:00:00",
+    "latest": "2026-11-12 06:17:00"
+  }
+}
