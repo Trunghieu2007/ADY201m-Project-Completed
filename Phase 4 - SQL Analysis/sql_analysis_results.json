@@ -1,70 +1,68 @@
 [
   {
     "id": "Q1",
-    "question": "Tổng số lượng bài viết, số chuyên mục và số tác giả trong cơ sở dữ liệu quan hệ?",
-    "sql": "SELECT \n                (SELECT COUNT(*) FROM VnExpress_Articles) AS total_articles,\n                (SELECT COUNT(*) FROM Categories) AS total_categories,\n                (SELECT COUNT(*) FROM Authors) AS total_authors;",
-    "interpretation": "Hệ thống quản trị CSDL quan hệ lưu trữ trọn vẹn 655 bài báo liên kết với 17 chuyên mục và 226 tác giả/phóng viên.",
+    "question": "Tổng số lượng bài viết đã được làm sạch và lưu trữ trong bảng CSDL?",
+    "sql": "SELECT COUNT(*) AS total_articles FROM VnExpress_Articles;",
+    "interpretation": "Bảng dữ liệu VnExpress_Articles lưu trữ đầy đủ 655 bài báo sạch đạt chuẩn toàn vẹn 100%.",
     "sample_data": [
       {
-        "total_articles": 655,
-        "total_categories": 17,
-        "total_authors": 226
+        "total_articles": 655
       }
     ]
   },
   {
     "id": "Q2",
-    "question": "Thống kê số lượng bài viết và tỷ lệ đóng góp theo từng Chuyên mục (sử dụng JOIN giữa Articles và Categories)?",
-    "sql": "SELECT \n                c.category_name, \n                COUNT(a.article_id) AS article_count,\n                ROUND(COUNT(a.article_id) * 100.0 / (SELECT COUNT(*) FROM VnExpress_Articles), 2) AS percentage\n            FROM Categories c\n            LEFT JOIN VnExpress_Articles a ON c.category_id = a.category_id\n            GROUP BY c.category_name\n            ORDER BY article_count DESC;",
-    "interpretation": "Các chuyên mục Thời sự, Thế giới, Thể thao và Kinh doanh chiếm tỷ trọng xuất bản lớn nhất tòa soạn, phản ánh đúng trọng tâm quan tâm của độc giả.",
+    "question": "Thống kê số lượng bài viết và tỷ lệ phần trăm theo từng Chuyên mục?",
+    "sql": "SELECT \n                category, \n                COUNT(*) AS article_count,\n                ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM VnExpress_Articles), 2) AS percentage\n            FROM VnExpress_Articles\n            GROUP BY category\n            ORDER BY article_count DESC;",
+    "interpretation": "Các chuyên mục Thời sự, Thế giới, Thể thao và Kinh doanh chiếm tỷ trọng xuất bản cao nhất của tòa soạn.",
     "sample_data": [
       {
-        "category_name": "Pháp luật",
+        "category": "Pháp luật",
         "article_count": 59,
         "percentage": 9.01
       },
       {
-        "category_name": "Thể thao",
+        "category": "Thể thao",
         "article_count": 56,
         "percentage": 8.55
       },
       {
-        "category_name": "Giải trí",
+        "category": "Giải trí",
         "article_count": 55,
         "percentage": 8.4
       },
       {
-        "category_name": "Thời sự",
+        "category": "Thời sự",
         "article_count": 54,
         "percentage": 8.24
       },
       {
-        "category_name": "Kinh doanh",
+        "category": "Kinh doanh",
         "article_count": 49,
         "percentage": 7.48
       },
       {
-        "category_name": "Thế giới",
+        "category": "Thế giới",
         "article_count": 49,
         "percentage": 7.48
       },
       {
-        "category_name": "Khoa học công nghệ",
+        "category": "Khoa học công nghệ",
         "article_count": 48,
         "percentage": 7.33
       },
       {
-        "category_name": "Bất động sản",
+        "category": "Bất động sản",
         "article_count": 46,
         "percentage": 7.02
       },
       {
-        "category_name": "Sức khỏe",
+        "category": "Sức khỏe",
         "article_count": 37,
         "percentage": 5.65
       },
       {
-        "category_name": "Giáo dục",
+        "category": "Giáo dục",
         "article_count": 34,
         "percentage": 5.19
       }
@@ -72,9 +70,9 @@
   },
   {
     "id": "Q3",
-    "question": "Đo lường độ dài bài viết trung bình, min, max và độ dài tiêu đề theo từng Chuyên mục?",
+    "question": "Đo lường độ dài bài viết trung bình, tối thiểu, tối đa và độ dài tiêu đề theo từng Chuyên mục?",
     "sql": "SELECT \n                category, \n                COUNT(*) AS total_articles,\n                ROUND(AVG(word_count), 1) AS avg_words,\n                MIN(word_count) AS min_words,\n                MAX(word_count) AS max_words,\n                ROUND(AVG(title_length), 1) AS avg_title_words\n            FROM VnExpress_Articles\n            GROUP BY category\n            ORDER BY avg_words DESC;",
-    "interpretation": "Chuyên mục Khoa học công nghệ và Thời sự có dung lượng thân bài trung bình lớn nhất (>800 từ) do đặc trưng điều tra chuyên đề phân tích sâu.",
+    "interpretation": "Chuyên mục Khoa học công nghệ và Thời sự có dung lượng thân bài trung bình lớn nhất (>800 từ) phản ánh tính chất bài phóng sự phân tích sâu.",
     "sample_data": [
       {
         "category": "Thể thao",
@@ -160,9 +158,9 @@
   },
   {
     "id": "Q4",
-    "question": "Top 10 bài viết có dung lượng từ dài nhất cùng thông tin tác giả và chuyên mục?",
-    "sql": "SELECT \n                a.article_id, \n                a.category, \n                a.title, \n                a.word_count, \n                a.author,\n                a.published_at\n            FROM VnExpress_Articles a\n            ORDER BY a.word_count DESC\n            LIMIT 10;",
-    "interpretation": "Các bài viết dài nhất đạt trên 2,000 - 3,000 từ, là các tuyến bài phóng sự điều tra hoặc hồ sơ sự kiện trọng điểm.",
+    "question": "Top 10 bài viết có dung lượng từ lớn nhất kèm tác giả và chuyên mục?",
+    "sql": "SELECT \n                article_id, \n                category, \n                title, \n                word_count, \n                author,\n                published_at\n            FROM VnExpress_Articles\n            ORDER BY word_count DESC\n            LIMIT 10;",
+    "interpretation": "Các bài viết dài nhất đạt trên 2,000 - 3,000 từ, là các hồ sơ sự kiện và bài điều tra đặc biệt của tòa soạn.",
     "sample_data": [
       {
         "article_id": "5144056",
@@ -248,9 +246,9 @@
   },
   {
     "id": "Q5",
-    "question": "Phân tích xu hướng xuất bản bài viết theo ngày trong tuần và so sánh giữa Ngày thường vs Cuối tuần?",
+    "question": "Phân tích xu hướng xuất bản giữa Ngày trong tuần (Thứ 2 - Thứ 6) và Ngày cuối tuần (Thứ 7, Chủ nhật)?",
     "sql": "SELECT \n                CASE WHEN is_weekend = 1 THEN 'Cuối tuần (T7, CN)' ELSE 'Ngày trong tuần (T2-T6)' END AS period_type,\n                COUNT(*) AS total_articles,\n                ROUND(AVG(word_count), 1) AS avg_words_per_article\n            FROM VnExpress_Articles\n            GROUP BY is_weekend\n            ORDER BY is_weekend ASC;",
-    "interpretation": "Số lượng bài viết tập trung chủ yếu vào các ngày làm việc trong tuần, dung lượng bài cuối tuần có xu hướng súc tích và giải trí hơn.",
+    "interpretation": "Lưu lượng bài viết tập trung chủ yếu vào các ngày làm việc trong tuần, phù hợp nhịp sinh hoạt và làm việc của độc giả.",
     "sample_data": [
       {
         "period_type": "Ngày trong tuần (T2-T6)",
@@ -266,67 +264,57 @@
   },
   {
     "id": "Q6",
-    "question": "Top 10 Phóng viên / Tác giả chuyên trách có nhiều bài viết nhất (sử dụng JOIN bảng Authors và lọc bỏ định danh VnExpress)?",
-    "sql": "SELECT \n                au.author_name,\n                au.role,\n                COUNT(a.article_id) AS total_published,\n                ROUND(AVG(a.word_count), 1) AS avg_words\n            FROM Authors au\n            JOIN VnExpress_Articles a ON au.author_id = a.author_id\n            WHERE au.author_name != 'VnExpress'\n            GROUP BY au.author_name, au.role\n            ORDER BY total_published DESC\n            LIMIT 10;",
-    "interpretation": "Nhận diện danh tính cụ thể của các cây bút phóng viên chủ chốt qua liên kết quan hệ khóa ngoại (Foreign Key) thay vì nhãn mặc định tòa soạn.",
+    "question": "Top 10 Tác giả / Phóng viên có nhiều bài viết nhất (ngoại trừ nhãn tòa soạn chung VnExpress)?",
+    "sql": "SELECT \n                author,\n                COUNT(*) AS total_published,\n                ROUND(AVG(word_count), 1) AS avg_words\n            FROM VnExpress_Articles\n            WHERE author != 'VnExpress' AND author != ''\n            GROUP BY author\n            ORDER BY total_published DESC\n            LIMIT 10;",
+    "interpretation": "Nhận diện danh tính cụ thể của các cây bút phóng viên chuyên trách đóng góp tích cực nhất trong tuần lễ tin tức.",
     "sample_data": [
       {
-        "author_name": "Mộc Trà",
-        "role": "Phóng viên chuyên trách",
+        "author": "Mộc Trà",
         "total_published": 17,
         "avg_words": 257.5
       },
       {
-        "author_name": "Hồng Duy",
-        "role": "Phóng viên chuyên trách",
+        "author": "Hồng Duy",
         "total_published": 15,
         "avg_words": 1194.1
       },
       {
-        "author_name": "Hà Thu",
-        "role": "Phóng viên chuyên trách",
+        "author": "Hà Thu",
         "total_published": 13,
         "avg_words": 719.1
       },
       {
-        "author_name": "Song Anh",
-        "role": "Phóng viên chuyên trách",
+        "author": "Song Anh",
         "total_published": 12,
         "avg_words": 920.4
       },
       {
-        "author_name": "An Khang",
-        "role": "Phóng viên chuyên trách",
+        "author": "An Khang",
         "total_published": 10,
         "avg_words": 1126.3
       },
       {
-        "author_name": "Hi",
-        "role": "Phóng viên chuyên trách",
+        "author": "Hi",
         "total_published": 10,
         "avg_words": 146.1
       },
       {
-        "author_name": "Như Anh",
-        "role": "Phóng viên chuyên trách",
+        "author": "Như Anh",
         "total_published": 10,
         "avg_words": 591.4
       },
       {
-        "author_name": "Bích Phương",
-        "role": "Phóng viên chuyên trách",
+        "author": "Bích Phương",
         "total_published": 9,
         "avg_words": 1838.3
       },
       {
-        "author_name": "Bảo Lâm",
-        "role": "Phóng viên chuyên trách",
+        "author": "Bảo Lâm",
         "total_published": 9,
         "avg_words": 1109.0
       },
       {
-        "author_name": "Mai Phương",
-        "role": "Phóng viên chuyên trách",
+        "author": "Mai Phương",
         "total_published": 9,
         "avg_words": 555.7
       }

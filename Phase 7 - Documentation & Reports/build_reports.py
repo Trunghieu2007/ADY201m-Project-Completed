@@ -168,39 +168,50 @@ def generate_final_report_docx(base_dir=None):
     # 5. SQL ANALYSIS
     doc.add_heading("5. PHÂN TÍCH DỮ LIỆU BẰNG HỆ CSDL SQL (SQL Analysis)", level=1)
     doc.add_paragraph(
-        "Nhóm thiết kế mô hình Cơ sở dữ liệu quan hệ chuẩn mực gồm 3 bảng thực thể có khóa ngoại (Foreign Keys) liên kết chặt chẽ "
-        "và 18 cột trường thông tin đa dạng:\n"
-        "• Bảng 1: Categories (Chuyên mục) — category_id (PK), category_name, description.\n"
-        "• Bảng 2: Authors (Tác giả) — author_id (PK), author_name, role.\n"
-        "• Bảng 3: VnExpress_Articles (Bài viết) — article_id (PK), title, description, content, author, author_id (FK), "
-        "published_at, publish_date, publish_hour, publish_dayofweek, is_weekend, category, category_id (FK), subcategory, url, "
-        "word_count, title_length, desc_length.\n"
-        "Hệ thống tạo 3 chỉ mục (Indexes) hỗ trợ tối ưu hóa truy vấn: idx_articles_category, idx_articles_author, idx_articles_pubdate."
+        "Nhóm thiết kế mô hình Cơ sở dữ liệu SQLite tối ưu, tinh gọn với 1 bảng duy nhất VnExpress_Articles gồm 16 cột "
+        "trường thông tin toàn diện, giúp đơn giản hóa cấu trúc dữ liệu, tăng tốc độ truy vấn và dễ bảo trì:\n"
+        "• Bảng: VnExpress_Articles (Bài viết VnExpress)\n"
+        "• Khóa chính: article_id (TEXT, PRIMARY KEY)\n"
+        "• Các trường nội dung: title, description, content, author, url\n"
+        "• Các trường thời gian: published_at, publish_date, publish_hour, publish_dayofweek, is_weekend\n"
+        "• Các trường phân loại & thống kê: category, subcategory, word_count, title_length, desc_length\n"
+        "• Chỉ mục (Indexes): idx_articles_category, idx_articles_author, idx_articles_pubdate."
     )
 
-    doc.add_paragraph("Chi tiết cấu trúc lược đồ các bảng và cột dữ liệu:")
-    table_schema = doc.add_table(rows=4, cols=3)
+    doc.add_paragraph("Chi tiết lược đồ cột của bảng VnExpress_Articles (16 cột):")
+    table_schema = doc.add_table(rows=17, cols=3)
     table_schema.alignment = WD_TABLE_ALIGNMENT.CENTER
-    schema_headers = ["Tên Bảng (Table)", "Khóa chính / Khóa ngoại", "Các Cột & Trường Dữ Liệu"]
+    schema_headers = ["Tên Cột (Column)", "Kiểu Dữ Liệu", "Ý Nghĩa Phân Tích"]
     for i, h in enumerate(schema_headers):
         cell = table_schema.cell(0, i)
         cell.text = h
         cell.paragraphs[0].runs[0].font.bold = True
         set_cell_background(cell, "E2E9F0")
 
-    schema_rows = [
-        ("Categories", "PK: category_id", "category_name (TEXT, UNIQUE), description (TEXT)"),
-        ("Authors", "PK: author_id", "author_name (TEXT, UNIQUE), role (TEXT)"),
-        ("VnExpress_Articles", "PK: article_id\nFK: category_id, author_id", 
-         "title, description, content, author, author_id, published_at, publish_date, publish_hour, "
-         "publish_dayofweek, is_weekend, category, category_id, subcategory, url, word_count, title_length, desc_length")
+    cols_desc = [
+        ("article_id", "TEXT (PK)", "Mã định danh duy nhất của bài báo bóc tách từ URL"),
+        ("title", "TEXT (NOT NULL)", "Tiêu đề bài viết"),
+        ("description", "TEXT", "Đoạn tóm tắt / Sapo của bài báo"),
+        ("content", "TEXT (NOT NULL)", "Toàn bộ nội dung thân bài"),
+        ("author", "TEXT (NOT NULL)", "Tên tác giả hoặc bút danh phóng viên"),
+        ("published_at", "TEXT (NOT NULL)", "Thời gian xuất bản đầy đủ (YYYY-MM-DD HH:MM:SS)"),
+        ("publish_date", "TEXT (NOT NULL)", "Ngày xuất bản (YYYY-MM-DD)"),
+        ("publish_hour", "INTEGER", "Khung giờ đăng bài trong ngày (0-23)"),
+        ("publish_dayofweek", "TEXT", "Thứ trong tuần (Monday, Tuesday...)"),
+        ("is_weekend", "INTEGER", "Cờ đánh dấu ngày cuối tuần (1: T7/CN, 0: Ngày thường)"),
+        ("category", "TEXT (NOT NULL)", "Chuyên mục tin tức chính"),
+        ("subcategory", "TEXT", "Tiểu mục tin tức chi tiết"),
+        ("url", "TEXT (NOT NULL)", "Đường dẫn liên kết bài viết gốc"),
+        ("word_count", "INTEGER", "Số lượng từ của thân bài"),
+        ("title_length", "INTEGER", "Số lượng từ của tiêu đề bài viết"),
+        ("desc_length", "INTEGER", "Số lượng từ của đoạn tóm tắt bài viết")
     ]
-    for r_idx, (tbl, pk_fk, cols) in enumerate(schema_rows, start=1):
-        table_schema.cell(r_idx, 0).text = tbl
-        table_schema.cell(r_idx, 1).text = pk_fk
-        table_schema.cell(r_idx, 2).text = cols
+    for r_idx, (col_n, col_t, col_m) in enumerate(cols_desc, start=1):
+        table_schema.cell(r_idx, 0).text = col_n
+        table_schema.cell(r_idx, 1).text = col_t
+        table_schema.cell(r_idx, 2).text = col_m
 
-    doc.add_paragraph("\nBộ 6 câu truy vấn SQL phân tích nghiệp vụ chuyên sâu kết hợp JOIN đa bảng:")
+    doc.add_paragraph("\nBộ 6 câu truy vấn SQL phân tích nghiệp vụ trên bảng duy nhất VnExpress_Articles:")
 
     for item in sql_data:
         p_q = doc.add_paragraph()
