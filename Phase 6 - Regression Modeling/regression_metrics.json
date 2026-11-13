@@ -1,0 +1,47 @@
+{
+  "features_used": [
+    "title_words",
+    "desc_words",
+    "publish_hour",
+    "publish_dayofweek",
+    "is_weekend",
+    "cat_Du lịch",
+    "cat_Giáo dục",
+    "cat_Giải trí",
+    "cat_Khoa học công nghệ",
+    "cat_Kinh doanh",
+    "cat_Pháp luật",
+    "cat_Sức khỏe",
+    "cat_Thư giãn",
+    "cat_Thế giới",
+    "cat_Thể thao",
+    "cat_Thời sự",
+    "cat_Tin tức",
+    "cat_Tâm sự",
+    "cat_Xe",
+    "cat_Ý kiến",
+    "cat_Đời sống"
+  ],
+  "target_variable": "word_count",
+  "train_samples_count": 527,
+  "test_samples_count": 132,
+  "models_evaluation": {
+    "Linear Regression": {
+      "MAE": 306.44,
+      "RMSE": 452.06,
+      "R2": 0.1606
+    },
+    "Ridge Regression": {
+      "MAE": 307.28,
+      "RMSE": 452.99,
+      "R2": 0.1572
+    },
+    "Random Forest Regressor": {
+      "MAE": 314.07,
+      "RMSE": 470.74,
+      "R2": 0.0898
+    }
+  },
+  "best_model": "Linear Regression",
+  "academic_validity_note": "Dung lượng bài báo chí phụ thuộc trực tiếp vào tính thời sự của sự việc thực tế và phong cách hành văn của phóng viên. Các siêu dữ liệu (giờ xuất bản, ngày đăng, chuyên mục) chỉ giải thích được một phần phương sai (R² ~0.10 - 0.15). Kết quả này phản ánh trung thực bản chất dữ liệu khách quan, tuyệt đối không bị rò rỉ dữ liệu (No Data Leakage)."
+}

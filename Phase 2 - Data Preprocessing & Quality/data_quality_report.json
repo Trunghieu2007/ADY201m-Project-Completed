@@ -1,0 +1,79 @@
+{
+  "dataset_name": "VnExpress Cleaned Articles (Fresh Batch)",
+  "generated_at": "2026-11-13 23:56:36",
+  "crawl_window_days": 7,
+  "total_raw_records": 672,
+  "total_clean_records": 659,
+  "removed_records_count": 13,
+  "rejection_breakdown": {
+    "Nội dung quá ngắn (< 50 từ, video/photo story)": 7,
+    "Tiêu đề rỗng hoặc chỉ chứa khoảng trắng": 2,
+    "Định dạng phi văn bản (og_type: website)": 4
+  },
+  "duplicate_article_ids": 0,
+  "duplicate_urls": 0,
+  "null_values_check": {
+    "article_id": 0,
+    "title": 0,
+    "description": 0,
+    "content": 0,
+    "author": 0,
+    "published_at": 0,
+    "category": 0,
+    "url": 0
+  },
+  "empty_strings_check": {
+    "article_id": 0,
+    "title": 0,
+    "description": 0,
+    "content": 0,
+    "author": 0,
+    "published_at": 0,
+    "category": 0,
+    "url": 0
+  },
+  "unique_authors_count": 227,
+  "top_authors_sample": {
+    "Mộc Trà": 18,
+    "Hồng Duy": 15,
+    "VnExpress": 14,
+    "Hà Thu": 13,
+    "Song Anh": 12,
+    "Như Anh": 10,
+    "Hi": 10,
+    "Bích Phương": 10,
+    "An Khang": 10,
+    "Thanh Danh": 9
+  },
+  "categories_count": 17,
+  "categories_distribution": {
+    "Pháp luật": 59,
+    "Thể thao": 56,
+    "Giải trí": 55,
+    "Thời sự": 54,
+    "Thế giới": 49,
+    "Kinh doanh": 49,
+    "Khoa học công nghệ": 48,
+    "Bất động sản": 48,
+    "Sức khỏe": 37,
+    "Giáo dục": 34,
+    "Xe": 32,
+    "Tâm sự": 30,
+    "Đời sống": 30,
+    "Thư giãn": 28,
+    "Du lịch": 27,
+    "Ý kiến": 22,
+    "Tin tức": 1
+  },
+  "word_count_statistics": {
+    "min": 61,
+    "max": 4139,
+    "mean": 779.86,
+    "median": 690.0,
+    "std": 466.68
+  },
+  "date_range": {
+    "earliest": "2026-11-07 00:00:00",
+    "latest": "2026-11-13 22:21:00"
+  }
+}
