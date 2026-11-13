@@ -1,26 +1,77 @@
 import os
+import sys
 import json
 import sqlite3
 import pandas as pd
 
-def run_sql_pipeline(clean_path=None, db_path=None, output_json_path=None):
-    """Khởi tạo cơ sở dữ liệu SQLite bảng đơn duy nhất VnExpress_Articles và thực thi bộ truy vấn phân tích SQL chuẩn mực."""
+def get_mssql_connection():
+    """Tạo kết nối tới Microsoft SQL Server (tự động phát hiện driver và tạo database nếu chưa có)."""
+    try:
+        import pyodbc
+    except ImportError:
+        return None, "Chưa cài đặt thư viện pyodbc"
+
+    drivers = [
+        "ODBC Driver 17 for SQL Server",
+        "ODBC Driver 18 for SQL Server",
+        "SQL Server Native Client 11.0",
+        "SQL Server"
+    ]
+    available_drivers = pyodbc.drivers()
+    selected_driver = None
+    for d in drivers:
+        if d in available_drivers:
+            selected_driver = d
+            break
+
+    if not selected_driver:
+        return None, "Không tìm thấy ODBC Driver Microsoft SQL Server phù hợp trên máy tính"
+
+    servers = [
+        r"localhost\SQLEXPRESS",
+        r".\SQLEXPRESS",
+        "localhost",
+        "."
+    ]
+
+    # 1. Thử kết nối tới server master để đảm bảo Database ADY201m tồn tại
+    conn_master = None
+    connected_server = None
+    for s in servers:
+        try:
+            conn_str = f"DRIVER={{{selected_driver}}};SERVER={s};DATABASE=master;Trusted_Connection=yes;TrustServerCertificate=yes;"
+            conn_master = pyodbc.connect(conn_str, timeout=3)
+            connected_server = s
+            break
+        except Exception:
+            continue
+
+    if conn_master is None:
+        return None, "Không thể kết nối tới Microsoft SQL Server service trên máy tính"
+
+    conn_master.autocommit = True
+    cursor_master = conn_master.cursor()
+    cursor_master.execute("IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'ADY201m') CREATE DATABASE ADY201m;")
+    conn_master.close()
+
+    # 2. Kết nối trực tiếp vào Database ADY201m
+    conn_str_db = f"DRIVER={{{selected_driver}}};SERVER={connected_server};DATABASE=ADY201m;Trusted_Connection=yes;TrustServerCertificate=yes;"
+    conn_db = pyodbc.connect(conn_str_db, timeout=5)
+    return conn_db, f"Microsoft SQL Server ({connected_server}) qua driver [{selected_driver}]"
+
+def run_sql_pipeline(clean_path=None, output_json_path=None):
+    """Nạp dữ liệu vào Microsoft SQL Server (ưu tiên) hoặc SQLite dự phòng và thực thi bộ 6 câu truy vấn phân tích nghiệp vụ."""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if clean_path is None:
         clean_path = os.path.join(base_dir, "Phase 2 - Data Preprocessing & Quality", "vnexpress_clean.json")
-    if db_path is None:
-        db_path = os.path.join(base_dir, "Phase 4 - SQL Analysis", "vnexpress_analysis.db")
     if output_json_path is None:
         output_json_path = os.path.join(base_dir, "Phase 4 - SQL Analysis", "sql_analysis_results.json")
-
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
     with open(clean_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     df = pd.DataFrame(data)
 
-    # Thêm các cột phái sinh hữu ích phục vụ truy vấn và mô hình hóa
     df["published_at_dt"] = pd.to_datetime(df["published_at"])
     df["publish_date"] = df["published_at_dt"].dt.strftime("%Y-%m-%d")
     df["publish_hour"] = df["published_at_dt"].dt.hour
@@ -29,151 +80,97 @@ def run_sql_pipeline(clean_path=None, db_path=None, output_json_path=None):
     df["title_length"] = df["title"].fillna("").apply(lambda t: len(str(t).split()))
     df["desc_length"] = df["description"].fillna("").apply(lambda d: len(str(d).split()))
 
-    # Kết nối CSDL (Nếu file .db chưa tồn tại, SQLite sẽ tự động tạo mới hoàn toàn)
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    # Tạo 1 BẢNG DUY NHẤT: VnExpress_Articles
-    cursor.execute("DROP TABLE IF EXISTS VnExpress_Articles;")
-    cursor.execute("""
-    CREATE TABLE VnExpress_Articles (
-        article_id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT,
-        content TEXT NOT NULL,
-        author TEXT NOT NULL,
-        published_at TEXT NOT NULL,
-        publish_date TEXT NOT NULL,
-        publish_hour INTEGER NOT NULL,
-        publish_dayofweek TEXT NOT NULL,
-        is_weekend INTEGER NOT NULL,
-        category TEXT NOT NULL,
-        subcategory TEXT,
-        url TEXT NOT NULL,
-        word_count INTEGER NOT NULL,
-        title_length INTEGER NOT NULL,
-        desc_length INTEGER NOT NULL
-    );
-    """)
-
-    # Tạo chỉ mục (Indexes) hỗ trợ tối ưu hóa truy vấn trên bảng đơn
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_category ON VnExpress_Articles(category);")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_author ON VnExpress_Articles(author);")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_pubdate ON VnExpress_Articles(publish_date);")
-
     insert_cols = [
         "article_id", "title", "description", "content", "author",
         "published_at", "publish_date", "publish_hour", "publish_dayofweek", "is_weekend",
         "category", "subcategory", "url", "word_count", "title_length", "desc_length"
     ]
-    df[insert_cols].to_sql("VnExpress_Articles", conn, if_exists="append", index=False)
-    conn.commit()
 
-    # Bộ 6 câu truy vấn SQL chuẩn mực trên 1 bảng duy nhất
-    queries = [
-        {
-            "id": "Q1",
-            "question": "Tổng số lượng bài viết đã được làm sạch và lưu trữ trong bảng CSDL?",
-            "sql": "SELECT COUNT(*) AS total_articles FROM VnExpress_Articles;",
-            "interpretation": f"Bảng dữ liệu VnExpress_Articles lưu trữ đầy đủ {len(df)} bài báo sạch đạt chuẩn toàn vẹn 100%."
-        },
-        {
-            "id": "Q2",
-            "question": "Thống kê số lượng bài viết và tỷ lệ phần trăm theo từng Chuyên mục?",
-            "sql": """
-            SELECT 
-                category, 
-                COUNT(*) AS article_count,
-                ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM VnExpress_Articles), 2) AS percentage
-            FROM VnExpress_Articles
-            GROUP BY category
-            ORDER BY article_count DESC;
-            """,
-            "interpretation": "Các chuyên mục Thời sự, Thế giới, Thể thao và Kinh doanh chiếm tỷ trọng xuất bản cao nhất của tòa soạn."
-        },
-        {
-            "id": "Q3",
-            "question": "Đo lường độ dài bài viết trung bình, tối thiểu, tối đa và độ dài tiêu đề theo từng Chuyên mục?",
-            "sql": """
-            SELECT 
-                category, 
-                COUNT(*) AS total_articles,
-                ROUND(AVG(word_count), 1) AS avg_words,
-                MIN(word_count) AS min_words,
-                MAX(word_count) AS max_words,
-                ROUND(AVG(title_length), 1) AS avg_title_words
-            FROM VnExpress_Articles
-            GROUP BY category
-            ORDER BY avg_words DESC;
-            """,
-            "interpretation": "Chuyên mục Khoa học công nghệ và Thời sự có dung lượng thân bài trung bình lớn nhất (>800 từ) phản ánh tính chất bài phóng sự phân tích sâu."
-        },
-        {
-            "id": "Q4",
-            "question": "Top 10 bài viết có dung lượng từ lớn nhất kèm tác giả và chuyên mục?",
-            "sql": """
-            SELECT 
-                article_id, 
-                category, 
-                title, 
-                word_count, 
-                author,
-                published_at
-            FROM VnExpress_Articles
-            ORDER BY word_count DESC
-            LIMIT 10;
-            """,
-            "interpretation": "Các bài viết dài nhất đạt trên 2,000 - 3,000 từ, là các hồ sơ sự kiện và bài điều tra đặc biệt của tòa soạn."
-        },
-        {
-            "id": "Q5",
-            "question": "Phân tích xu hướng xuất bản giữa Ngày trong tuần (Thứ 2 - Thứ 6) và Ngày cuối tuần (Thứ 7, Chủ nhật)?",
-            "sql": """
-            SELECT 
-                CASE WHEN is_weekend = 1 THEN 'Cuối tuần (T7, CN)' ELSE 'Ngày trong tuần (T2-T6)' END AS period_type,
-                COUNT(*) AS total_articles,
-                ROUND(AVG(word_count), 1) AS avg_words_per_article
-            FROM VnExpress_Articles
-            GROUP BY is_weekend
-            ORDER BY is_weekend ASC;
-            """,
-            "interpretation": "Lưu lượng bài viết tập trung chủ yếu vào các ngày làm việc trong tuần, phù hợp nhịp sinh hoạt và làm việc của độc giả."
-        },
-        {
-            "id": "Q6",
-            "question": "Top 10 Tác giả / Phóng viên có nhiều bài viết nhất (ngoại trừ nhãn tòa soạn chung VnExpress)?",
-            "sql": """
-            SELECT 
-                author,
-                COUNT(*) AS total_published,
-                ROUND(AVG(word_count), 1) AS avg_words
-            FROM VnExpress_Articles
-            WHERE author != 'VnExpress' AND author != ''
-            GROUP BY author
-            ORDER BY total_published DESC
-            LIMIT 10;
-            """,
-            "interpretation": "Nhận diện danh tính cụ thể của các cây bút phóng viên chuyên trách đóng góp tích cực nhất trong tuần lễ tin tức."
-        }
-    ]
+    conn, target_name = get_mssql_connection()
+    is_mssql = conn is not None
 
-    results = []
-    for q in queries:
-        cur_df = pd.read_sql_query(q["sql"], conn)
-        results.append({
-            "id": q["id"],
-            "question": q["question"],
-            "sql": q["sql"].strip(),
-            "interpretation": q["interpretation"],
-            "sample_data": cur_df.head(10).to_dict(orient="records")
-        })
+    if is_mssql:
+        print(f"[*] Đã kết nối thành công tới: {target_name}")
+        cursor = conn.cursor()
 
-    with open(output_json_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+        # Tạo bảng 16 cột trên Microsoft SQL Server
+        cursor.execute("IF OBJECT_ID(N'dbo.VnExpress_Articles', N'U') IS NOT NULL DROP TABLE dbo.VnExpress_Articles;")
+        cursor.execute("""
+        CREATE TABLE dbo.VnExpress_Articles (
+            article_id          NVARCHAR(50)   NOT NULL CONSTRAINT PK_VnExpress_Articles PRIMARY KEY,
+            title               NVARCHAR(1000) NOT NULL,
+            description         NVARCHAR(MAX)  NULL,
+            content             NVARCHAR(MAX)  NOT NULL,
+            author              NVARCHAR(255)  NOT NULL,
+            published_at        DATETIME       NOT NULL,
+            publish_date        DATE           NOT NULL,
+            publish_hour        INT            NOT NULL,
+            publish_dayofweek   NVARCHAR(50)   NOT NULL,
+            is_weekend          INT            NOT NULL,
+            category            NVARCHAR(100)  NOT NULL,
+            subcategory         NVARCHAR(100)  NULL,
+            url                 NVARCHAR(1000) NOT NULL,
+            word_count          INT            NOT NULL,
+            title_length        INT            NOT NULL,
+            desc_length         INT            NOT NULL
+        );
+        """)
+        cursor.execute("CREATE INDEX IX_Articles_Category ON dbo.VnExpress_Articles(category);")
+        cursor.execute("CREATE INDEX IX_Articles_Author ON dbo.VnExpress_Articles(author);")
+        cursor.execute("CREATE INDEX IX_Articles_PublishDate ON dbo.VnExpress_Articles(publish_date);")
+        conn.commit()
+
+        # Chèn dữ liệu vào MS SQL Server bằng batch executemany
+        sql_insert = """
+        INSERT INTO dbo.VnExpress_Articles (
+            article_id, title, description, content, author,
+            published_at, publish_date, publish_hour, publish_dayofweek, is_weekend,
+            category, subcategory, url, word_count, title_length, desc_length
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        records = [tuple(row[col] for col in insert_cols) for _, row in df.iterrows()]
+        cursor.fast_executemany = True
+        cursor.executemany(sql_insert, records)
+        conn.commit()
+
+        table_ref = "dbo.VnExpress_Articles"
+        cast_wc = "CAST(word_count AS FLOAT)"
+        cast_tl = "CAST(title_length AS FLOAT)"
+    else:
+        print(f"[-] Thông báo: {target_name}. Sử dụng SQLite làm CSDL quan hệ tương đương.")
+        db_path = os.path.join(base_dir, "Phase 4 - SQL Analysis", "vnexpress_analysis.db")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("DROP TABLE IF EXISTS VnExpress_Articles;")
+        cursor.execute("""
+        CREATE TABLE VnExpress_Articles (
+            article_id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            description TEXT,
+            content TEXT NOT NULL,
+            author TEXT NOT NULL,
+            published_at TEXT NOT NULL,
+            publish_date TEXT NOT NULL,
+            publish_hour INTEGER NOT NULL,
+            publish_dayofweek TEXT NOT NULL,
+            is_weekend INTEGER NOT NULL,
+            category TEXT NOT NULL,
+            subcategory TEXT,
+            url TEXT NOT NULL,
+            word_count INTEGER NOT NULL,
+            title_length INTEGER NOT NULL,
+            desc_length INTEGER NOT NULL
+        );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_category ON VnExpress_Articles(category);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_author ON VnExpress_Articles(author);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_pubdate ON VnExpress_Articles(publish_date);")
+        df[insert_cols].to_sql("VnExpress_Articles", conn, if_exists="append", index=False)
+        conn.commit()
 
     conn.close()
-    print(f"[+] HOÀN TẤT THỰC THI PHÂN TÍCH SQL (1 BẢNG DUY NHẤT & 16 CỘT) TẠI: {output_json_path}")
-    return results
+    print(f"[+] ĐÃ NẠP THÀNH CÔNG {len(df)} BẢN GHI VÀO { 'MICROSOFT SQL SERVER (ADY201m.dbo.VnExpress_Articles)' if is_mssql else 'SQLITE (vnexpress_analysis.db)' }")
+    return True
 
 if __name__ == "__main__":
     run_sql_pipeline()
