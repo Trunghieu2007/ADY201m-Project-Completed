@@ -118,7 +118,7 @@ def train_and_evaluate_regression(clean_path=None, output_dir=None):
         "academic_validity_note": (
             "Dung lượng bài báo chí phụ thuộc trực tiếp vào tính thời sự của sự việc thực tế và phong cách hành văn của phóng viên. "
             "Các siêu dữ liệu (giờ xuất bản, ngày đăng, chuyên mục) chỉ giải thích được một phần phương sai (R² ~0.10 - 0.15). "
-            "Kết quả này phản ánh trung thực bản chất dữ liệu khách quan, tuyệt đối không bị rò rỉ dữ liệu (No Data Leakage)."
+            "Kết quả này phản ánh bản chất dữ liệu khách quan, không sử dụng thông tin phái sinh từ thân bài (No Data Leakage)."
         )
     }
 

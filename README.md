@@ -1,178 +1,189 @@
-# HỆ THỐNG PHÂN TÍCH & HỌC MÁY TRÊN DỮ LIỆU BÁO ĐIỆN TỬ VNEXPRESS (ADY201m)
+# DỰ ÁN KHOA HỌC DỮ LIỆU: MÔ TẢ & PHÂN LOẠI DỮ LIỆU BÁO ĐIỆN TỬ VNEXPRESS (ADY201m)
 
-Dự án hoàn chỉnh đạt chuẩn Rubric môn học **Khoa học Dữ liệu Ứng dụng (ADY201m)** tại Đại học FPT. Toàn bộ mã nguồn, dữ liệu tươi, mô hình học máy và tài liệu báo cáo được chuẩn hóa theo quy trình khoa học dữ liệu khép kín, có thể chạy lại từ đầu đến cuối chỉ với một lệnh duy nhất.
+Báo cáo dự án môn học **Khoa học Dữ liệu Ứng dụng (ADY201m)** tại Đại học FPT. Toàn bộ mã nguồn, dữ liệu thực nghiệm, mô hình học máy và tài liệu báo cáo được chuẩn hóa theo các giai đoạn nghiên cứu khoa học dữ liệu, phục vụ việc đánh giá và tái lập kết quả.
+
+---
+
+## THÀNH VIÊN VÀ PHÂN CÔNG NHIỆM VỤ
+
+| STT | Họ và Tên | Vai trò & Chức năng phụ trách | Trách nhiệm cụ thể trong dự án |
+| :---: | :--- | :--- | :--- |
+| **1** | **Phạm Hùng Dương** | **Kỹ sư Thu thập Dữ liệu (Data Engineer)** | - Thiết kế và vận hành module cào dữ liệu VnExpress (`Phase 1`).<br>- Xây dựng quy trình sàng lọc chất lượng, tiền xử lý và loại trừ dữ liệu rác (`Phase 2`). |
+| **2** | **Đinh Trung Hiếu** | **Chuyên viên Phân tích Dữ liệu (Data Analyst)** | - Khám phá và trực quan hóa dữ liệu thống kê mô tả (EDA) (`Phase 3`).<br>- Xây dựng mô hình Cơ sở dữ liệu SQLite và viết truy vấn phân tích SQL (`Phase 4`). |
+| **3** | **Nguyễn Hữu Hùng** | **Kỹ sư Học máy (Machine Learning Engineer)** | - Trích xuất đặc trưng TF-IDF và huấn luyện mô hình Phân loại văn bản (`Phase 5`).<br>- Xây dựng mô hình Hồi quy dự đoán dung lượng bài viết từ siêu dữ liệu (`Phase 6`). |
 
 ---
 
 ## 1. TỔNG QUAN VÀ MỤC TIÊU DỰ ÁN
 
-- **Bối cảnh thực tế**: Khai phá tin tức báo điện tử VnExpress – trang tin trực tuyến số 1 Việt Nam.
-- **Mục tiêu học thuật**:
-  1. Thu thập dữ liệu tươi tự động từ 16 chuyên mục RSS trong phạm vi 7 ngày gần nhất.
-  2. Kiểm định chất lượng toàn diện (Strict Data Quality): loại bỏ hoàn toàn bài rác/media, 0% missing values, 0% empty strings, 0% trùng lặp, nhận diện tác giả thực tế.
-  3. Khám phá trực quan (EDA) với bộ biểu đồ độ phân giải cao và phân tích nghiệp vụ sâu.
-  4. Lưu trữ kho dữ liệu quan hệ và thực thi 6 câu truy vấn SQL quản trị nội dung.
-  5. Phân loại chuyên mục tự động bằng TF-IDF kết hợp đa mô hình học máy (Linear SVM, Logistic Regression, Naive Bayes, Decision Tree).
-  6. Xây dựng mô hình hồi quy dự đoán độ dài bài viết dựa trên siêu dữ liệu (Metadata), phòng chống rò rỉ dữ liệu (No Data Leakage).
-  7. Xuất bản toàn bộ hồ sơ nghiệm thu: Báo cáo Word/PDF, Slide thuyết trình PPTX, Cẩm nang hỏi đáp bảo vệ (Q&A Handbook).
+- **Đối tượng nghiên cứu**: Dữ liệu tin tức báo điện tử VnExpress thu thập từ 16 chuyên mục chính thống trong vòng 7 ngày gần nhất.
+- **Mục tiêu nghiên cứu**:
+  1. Thu thập dữ liệu báo chí có cấu trúc từ hệ thống RSS feeds của VnExpress.
+  2. Kiểm định chất lượng dữ liệu: xác định và loại trừ các bản ghi không phù hợp (nội dung rác, video/photo story thiếu văn bản, thiếu tiêu đề).
+  3. Phân tích khám phá dữ liệu (EDA) và trực quan hóa phân bố chuyên mục, thời gian xuất bản, dung lượng từ và danh tính tác giả.
+  4. Quản lý dữ liệu tập trung trên hệ quản trị CSDL SQLite (1 bảng đơn `VnExpress_Articles`) và thực thi 6 truy vấn phục vụ phân tích nghiệp vụ.
+  5. Đánh giá và so sánh thực nghiệm 4 mô hình phân loại văn bản: Linear SVM, Logistic Regression, Multinomial Naive Bayes, Decision Tree trên không gian đặc trưng TF-IDF.
+  6. Thử nghiệm mô hình hồi quy (Linear Regression, Ridge Regression, Random Forest) dự đoán dung lượng bài viết dựa trên siêu dữ liệu xuất bản (Metadata), bảo đảm không xảy ra hiện tượng rò rỉ dữ liệu (Data Leakage).
 
 ---
 
-## 2. CẤU TRÚC THƯ MỤC CHUẨN HÓA THEO GIAI ĐOẠN
+## 2. CẤU TRÚC THƯ MỤC DỰ ÁN
 
 ```text
 ADY201m-Project-Completed/
 ├── requirements.txt                        # Danh mục thư viện Python yêu cầu
-├── README.md                               # Tài liệu hướng dẫn và báo cáo kết quả
-├── Final_Report.docx                       # File báo cáo Word tại thư mục gốc
-├── Final_Report.pdf                        # File báo cáo PDF tại thư mục gốc
-├── Presentation.pptx                       # File slide bảo vệ tại thư mục gốc
-├── Q&A_Handbook.docx                       # File Q&A phản biện tại thư mục gốc
+├── README.md                               # Hướng dẫn thực thi và báo cáo kết quả
+├── Final_Report.docx                       # Báo cáo tổng kết đồ án khoa học
+├── ProfessorRequirement.txt                # Yêu cầu đề bài và rubric môn học
 │
 ├── Phase 1 - Data Collection/
-│   ├── crawl_vnexpress.py                  # Script cào đa luồng 16 chuyên mục RSS
-│   └── vnexpress_raw.json                  # [ĐẦU RA GIAI ĐOẠN 1] Dữ liệu cào thô (672 bài)
+│   ├── crawl_vnexpress.py                  # Module thu thập dữ liệu 16 chuyên mục RSS
+│   └── vnexpress_raw.json                  # Dữ liệu cào thô (672 bài viết)
 │
 ├── Phase 2 - Data Preprocessing & Quality/
-│   ├── clean_and_validate.py               # Làm sạch, kiểm định rỗng/khuyết/trùng lặp
-│   ├── vnexpress_clean.json                # [ĐẦU RA GIAI ĐOẠN 2] Dữ liệu đã làm sạch & chuẩn hóa
+│   ├── clean_and_validate.py               # Module tiền xử lý và kiểm định tính toàn vẹn
+│   ├── vnexpress_clean.json                # Dữ liệu sạch sau tiền xử lý (655 bài viết)
 │   ├── data_quality_report.json            # Thống kê chi tiết chất lượng dữ liệu
-│   └── data_cleaning_log.txt               # Nhật ký loại bỏ bản ghi
+│   └── data_cleaning_log.txt               # Nhật ký loại trừ các bản ghi không đạt chuẩn
 │
 ├── Phase 3 - Exploratory Data Analysis/
-│   ├── run_eda.py                          # Sinh 5 biểu đồ trực quan hóa dữ liệu
-│   ├── bieu_do_1_chuyen_muc.png            # Phân bố số lượng bài theo chuyên mục
-│   ├── bieu_do_2_phan_bo_gio.png           # Phân bố theo khung giờ xuất bản
-│   ├── bieu_do_3_phan_bo_tu.png            # Phân bố độ dài bài viết (Histogram/KDE)
-│   ├── bieu_do_4_do_dai_chuyen_muc.png     # Độ dài trung bình theo chuyên mục
-│   └── bieu_do_5_top_tac_gia.png           # Top 10 phóng viên tích cực nhất
+│   ├── run_eda.py                          # Module trực quan hóa dữ liệu EDA
+│   ├── bieu_do_1_chuyen_muc.png            # Biểu đồ số lượng bài theo chuyên mục
+│   ├── bieu_do_2_phan_bo_gio.png           # Biểu đồ tần suất xuất bản theo khung giờ
+│   ├── bieu_do_3_phan_bo_tu.png            # Biểu đồ phân bố độ dài bài viết
+│   ├── bieu_do_4_do_dai_chuyen_muc.png     # Biểu đồ độ dài trung bình theo thể loại
+│   └── bieu_do_5_top_tac_gia.png           # Biểu đồ Top 10 tác giả/phóng viên
 │
 ├── Phase 4 - SQL Analysis/
-│   ├── run_sql_analysis.py                 # Khởi tạo CSDL SQLite & chạy 6 truy vấn
-│   ├── vnexpress_analysis.db               # Cơ sở dữ liệu quan hệ SQLite (3 bảng, 18 cột)
+│   ├── run_sql_analysis.py                 # Module tạo CSDL và thực thi truy vấn SQL
+│   ├── vnexpress_analysis.db               # Cơ sở dữ liệu SQLite (1 bảng duy nhất, 16 cột)
 │   └── sql_analysis_results.json           # Kết quả thực thi 6 câu truy vấn SQL
 │
 ├── Phase 5 - Classification Modeling/
-│   ├── train_classifier.py                 # Huấn luyện & đánh giá 4 mô hình phân loại
-│   ├── category_classifier_model.joblib    # Mô hình tối ưu lưu trữ (Linear SVM)
+│   ├── train_classifier.py                 # Module huấn luyện và đánh giá 4 mô hình phân loại
+│   ├── category_classifier_model.joblib    # Trọng số mô hình Linear SVM lưu trữ
 │   ├── tfidf_vectorizer.joblib             # Bộ vector hóa TF-IDF (4000 n-grams)
-│   ├── confusion_matrix.png                # Ma trận nhầm lẫn
-│   ├── model_comparison_bar.png            # Đồ thị so sánh các thuật toán
-│   └── classification_metrics.json         # Chỉ số đo lường chi tiết
+│   ├── confusion_matrix.png                # Ma trận nhầm lẫn (Confusion Matrix)
+│   ├── model_comparison_bar.png            # Biểu đồ so sánh các thuật toán phân loại
+│   └── classification_metrics.json         # Chi tiết các chỉ số Accuracy, Precision, Recall, F1
 │
-├── Phase 6 - Regression Modeling/
-│   ├── train_regression.py                 # Hồi quy dự đoán dung lượng bài (word count)
-│   ├── article_word_count_regressor.joblib # Mô hình hồi quy lưu trữ
-│   ├── regression_actual_vs_predicted.png  # Đồ thị Thực tế vs Dự đoán
-│   ├── regression_residuals_plot.png       # Đồ thị phần dư (Residuals)
-│   ├── regression_comparison_bar.png       # So sánh sai số các mô hình
-│   └── regression_metrics.json             # Bảng đo lường MAE, RMSE, R²
-│
-└── Phase 7 - Documentation & Reports/
-    ├── build_reports.py                    # Script tự động tạo DOCX, PPTX và PDF
-    ├── Final_Report.docx                   # Báo cáo tổng kết 14 mục chuẩn học thuật
-    ├── Final_Report.pdf                    # Bản xuất PDF chính thức
-    ├── Presentation.pptx                   # Bộ slide thuyết trình bảo vệ đồ án
-    └── Q&A_Handbook.docx                   # Cẩm nang 10 câu hỏi đáp phản biện
+└── Phase 6 - Regression Modeling/
+    ├── train_regression.py                 # Module huấn luyện và đánh giá mô hình hồi quy
+    ├── article_word_count_regressor.joblib # Trọng số mô hình hồi quy lưu trữ
+    ├── regression_actual_vs_predicted.png  # Biểu đồ Thực tế vs Dự đoán
+    ├── regression_residuals_plot.png       # Biểu đồ phân bố phần dư (Residuals Plot)
+    ├── regression_comparison_bar.png       # Biểu đồ so sánh sai số MAE & RMSE giữa các mô hình
+    └── regression_metrics.json             # Bảng đo lường sai số và hệ số xác định R²
 ```
 
 ---
 
 ## 3. HƯỚNG DẪN THỰC THI THEO TỪNG GIAI ĐOẠN
 
-### Bước 1: Clone repository và cài đặt thư viện
+### Bước 1: Chuẩn bị môi trường
 ```bash
 git clone https://github.com/Trunghieu2007/ADY201m-Project-Completed.git
 cd ADY201m-Project-Completed
 pip install -r requirements.txt
-pip install python-docx python-pptx docx2pdf reportlab
 ```
 
-### Bước 2: Thực thi từng giai đoạn độc lập
+### Bước 2: Chạy độc lập từng giai đoạn
 
 ```bash
-# Giai đoạn 1: Thu thập dữ liệu tươi (tùy chọn cào mới nếu cần)
+# Giai đoạn 1: Thu thập dữ liệu từ VnExpress (chỉ chạy khi muốn cào đợt mới)
 python "Phase 1 - Data Collection\crawl_vnexpress.py"
 
-# Giai đoạn 2: Tiền xử lý và kiểm định chất lượng dữ liệu
+# Giai đoạn 2: Tiền xử lý, loại bỏ bản ghi rác và kiểm tra tính toàn vẹn
 python "Phase 2 - Data Preprocessing & Quality\clean_and_validate.py"
 
-# Giai đoạn 3: Phân tích khám phá dữ liệu trực quan (EDA)
+# Giai đoạn 3: Phân tích khám phá dữ liệu trực quan (xuất 5 biểu đồ PNG)
 python "Phase 3 - Exploratory Data Analysis\run_eda.py"
 
-# Giai đoạn 4: Khởi tạo CSDL SQLite và thực thi truy vấn SQL quan hệ
+# Giai đoạn 4: Tạo CSDL SQLite và chạy 6 câu truy vấn phân tích SQL
 python "Phase 4 - SQL Analysis\run_sql_analysis.py"
 
-# Giai đoạn 5: Huấn luyện và đánh giá mô hình phân loại văn bản
+# Giai đoạn 5: Huấn luyện và đánh giá mô hình phân loại văn bản (4 thuật toán)
 python "Phase 5 - Classification Modeling\train_classifier.py"
 
-# Giai đoạn 6: Huấn luyện và đánh giá mô hình hồi quy dung lượng bài
+# Giai đoạn 6: Huấn luyện và đánh giá mô hình hồi quy dung lượng bài viết
 python "Phase 6 - Regression Modeling\train_regression.py"
-
-# Giai đoạn 7: Xuất bản tài liệu Báo cáo Word, Slide PPTX và Báo cáo PDF
-python "Phase 7 - Documentation & Reports\build_reports.py"
 ```
 
 ---
 
-## 4. KẾT QUẢ THỰC NGHIỆM ĐỢT THU THẬP TƯƠI (FRESH BATCH)
+## 4. KẾT QUẢ THỰC NGHIỆM VÀ ĐÁNH GIÁ
 
-### A. Kiểm định Chất lượng Dữ liệu (Data Quality Verification)
-- **Tổng số bài cào thô (vnexpress_raw.json)**: 672 bài viết trong 7 ngày gần nhất.
-- **Tổng số bài sau làm sạch (vnexpress_clean.json)**: 659 bài viết đạt chuẩn (loại 13 bài media ảnh/video dưới 50 từ).
-- **Kiểm định khuyết/rỗng/trùng lặp**:
-  - Null Values: **0 bản ghi** ở tất cả các trường.
-  - Empty Strings: **0 bản ghi** ở tất cả các trường.
-  - Duplicate IDs / URLs: **0 bản ghi**.
-- **Đặc trưng độ dài**: Ngắn nhất 51 từ, trung bình 746.2 từ, dài nhất 3,248 từ.
-- **Số lượng tác giả nhận diện**: 227 tác giả/bút danh độc nhất.
+### A. Kiểm định Chất lượng Dữ liệu (Data Quality)
+- **Quy mô thu thập**: 672 bài viết thô từ 16 chuyên mục RSS trong 7 ngày gần nhất.
+- **Quy mô sau tiền xử lý**: 655 bài viết đạt chuẩn (loại 17 bài có dung lượng dưới 50 từ hoặc bài ảnh/video không có văn bản).
+- **Kiểm tra tính toàn vẹn**:
+  - Giá trị Null: 0 trường hợp.
+  - Chuỗi rỗng (Empty String): 0 trường hợp.
+  - Trùng lặp (Duplicate ID/URL): 0 trường hợp.
+- **Nhận diện tác giả**: Bóc tách danh tính của 226 tác giả và bút danh phóng viên chuyên trách thay vì nhãn mặc định tòa soạn.
 
-### B. Thiết kế Cơ sở Dữ liệu SQL Bảng Đơn (1 Bảng Duy Nhất & 16 Cột)
-Kho dữ liệu SQLite (`Phase 4 - SQL Analysis/vnexpress_analysis.db`) được thiết kế tinh gọn theo mô hình 1 bảng duy nhất `VnExpress_Articles` gồm 16 cột trường thông tin toàn diện và 3 chỉ mục (Indexes) tối ưu hóa truy vấn:
-- **Tên bảng**: `VnExpress_Articles`
-- **Khóa chính (PK)**: `article_id` (TEXT)
-- **Danh sách 16 cột chi tiết**:
-  1. `article_id` (TEXT, PK): Định danh duy nhất bóc tách từ bài báo VnExpress.
-  2. `title` (TEXT, NOT NULL): Tiêu đề bài viết.
-  3. `description` (TEXT): Đoạn tóm tắt ngắn (Sapo).
-  4. `content` (TEXT, NOT NULL): Toàn bộ thân bài.
-  5. `author` (TEXT, NOT NULL): Tên tác giả hoặc bút danh phóng viên.
-  6. `published_at` (TEXT, NOT NULL): Thời gian xuất bản (YYYY-MM-DD HH:MM:SS).
-  7. `publish_date` (TEXT, NOT NULL): Ngày đăng (YYYY-MM-DD).
-  8. `publish_hour` (INTEGER, NOT NULL): Khung giờ đăng bài trong ngày (0-23).
-  9. `publish_dayofweek` (TEXT, NOT NULL): Thứ trong tuần (Monday, Tuesday...).
-  10. `is_weekend` (INTEGER, NOT NULL): Cờ đánh dấu ngày cuối tuần (1: Thứ 7/Chủ nhật, 0: Ngày thường).
-  11. `category` (TEXT, NOT NULL): Chuyên mục tin tức chính.
-  12. `subcategory` (TEXT): Tiểu mục chi tiết.
-  13. `url` (TEXT, NOT NULL): Đường dẫn bài viết gốc.
-  14. `word_count` (INTEGER, NOT NULL): Số từ trong thân bài.
-  15. `title_length` (INTEGER, NOT NULL): Số từ trong tiêu đề.
-  16. `desc_length` (INTEGER, NOT NULL): Số từ trong đoạn tóm tắt.
-- **Chỉ mục tăng tốc (Indexes)**: `idx_articles_category`, `idx_articles_author`, `idx_articles_pubdate`.
+---
 
-### C. Hiệu năng Mô hình Phân loại Thể loại Báo chí (Text Classification)
-- Mẫu dữ liệu sử dụng: 660 bài thuộc 16 lớp chuyên mục (Stratified Split: 528 bài train, 132 bài test).
-- Đặc trưng: TF-IDF 4,000 từ khóa quan trọng, n-gram (1, 2).
-- So sánh hiệu năng thực tế trên cùng tập kiểm thử:
+### B. Thiết kế Cơ sở Dữ liệu SQL (Bảng đơn `VnExpress_Articles`)
 
-| Mô hình Phân loại | Accuracy | Precision | Recall | Macro F1 | Weighted F1 |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Linear SVM (Mô hình tốt nhất)** | **84.09%** | **84.97%** | **84.09%** | **82.35%** | **84.03%** |
-| Logistic Regression | 76.52% | 76.62% | 76.52% | 74.03% | 75.47% |
-| Multinomial Naive Bayes | 76.52% | 76.99% | 76.52% | 74.45% | 75.46% |
-| Decision Tree | 46.97% | 49.62% | 46.97% | 47.01% | 47.55% |
+Cơ sở dữ liệu SQLite (`Phase 4 - SQL Analysis/vnexpress_analysis.db`) được tổ chức tinh gọn thành 1 bảng duy nhất với đầy đủ các thuộc tính nội dung và siêu dữ liệu:
 
-### C. Hiệu năng Mô hình Hồi quy Dự đoán Dung lượng Bài viết (Regression)
-- Biến mục tiêu: `word_count` (Tính từ nội dung thân bài).
-- Biến đầu vào: Metadata (Số từ tiêu đề, Số từ mô tả, Khung giờ xuất bản, Thứ trong tuần, Cuối tuần, One-Hot Encoding chuyên mục). Tuyệt đối **không bị rò rỉ dữ liệu (No Data Leakage)**.
-- Kết quả đo lường:
-  - **Linear Regression**: MAE = 306.44 từ, RMSE = 452.06 từ, $R^2$ = 0.1606.
-  - **Ridge Regression**: MAE = 307.28 từ, RMSE = 452.99 từ, $R^2$ = 0.1572.
-  - **Random Forest**: MAE = 314.07 từ, RMSE = 470.74 từ, $R^2$ = 0.0898.
-- **Nhận định khoa học**: Hệ số $R^2 \approx 0.16$ phản ánh trung thực bản chất dữ liệu khách quan. Độ dài bài báo thực tế phụ thuộc trực tiếp vào tính thời sự và quy mô sự việc, siêu dữ liệu chỉ giải thích được một phần phương sai. Nhóm báo cáo trung thực giới hạn học thuật thay vì ngụy tạo dữ liệu.
+| STT | Tên Cột (Column Name) | Kiểu Dữ Liệu | Ràng Buộc | Ý Nghĩa Phân Tích & Chức Năng Nghiệp Vụ |
+| :---: | :--- | :---: | :---: | :--- |
+| **1** | `article_id` | `TEXT` | `PRIMARY KEY` | Mã định danh duy nhất của bài viết được trích xuất từ liên kết bài báo VnExpress. |
+| **2** | `title` | `TEXT` | `NOT NULL` | Tiêu đề bài viết, đại diện cho nội dung tóm lược ngắn gọn nhất. |
+| **3** | `description` | `TEXT` | `NULL` | Phần mô tả tóm tắt (sapo) nằm đầu mỗi bài báo. |
+| **4** | `content` | `TEXT` | `NOT NULL` | Toàn bộ văn bản thân bài báo (sau khi đã ghép các đoạn paragraph). |
+| **5** | `author` | `TEXT` | `NOT NULL` | Tên tác giả hoặc bút danh phóng viên phụ trách bài viết. |
+| **6** | `published_at` | `TEXT` | `NOT NULL` | Mốc thời gian xuất bản bài viết theo định dạng chuẩn `YYYY-MM-DD HH:MM:SS`. |
+| **7** | `publish_date` | `TEXT` | `NOT NULL` | Ngày xuất bản bài viết (`YYYY-MM-DD`), phục vụ nhóm dữ liệu theo ngày. |
+| **8** | `publish_hour` | `INTEGER` | `NOT NULL` | Khung giờ xuất bản trong ngày (từ 0 đến 23), dùng để phân tích hoạt động theo giờ. |
+| **9** | `publish_dayofweek`| `TEXT` | `NOT NULL` | Thứ trong tuần (`Monday`, `Tuesday`...), phục vụ phân tích xu hướng theo thứ. |
+| **10**| `is_weekend` | `INTEGER` | `NOT NULL` | Biến nhị phân đánh dấu ngày cuối tuần (1: Thứ Bảy/Chủ Nhật, 0: Ngày làm việc). |
+| **11**| `category` | `TEXT` | `NOT NULL` | Chuyên mục tin tức chính (Thời sự, Kinh doanh, Thế giới, Thể thao...). |
+| **12**| `subcategory` | `TEXT` | `NULL` | Tiểu mục chi tiết của chuyên mục chính (nếu có). |
+| **13**| `url` | `TEXT` | `NOT NULL` | Đường dẫn liên kết trực tiếp tới trang bài viết trên VnExpress. |
+| **14**| `word_count` | `INTEGER` | `NOT NULL` | Tổng số lượng từ trong phần thân bài báo (`content`). |
+| **15**| `title_length` | `INTEGER` | `NOT NULL` | Số lượng từ trong tiêu đề bài viết (`title`). |
+| **16**| `desc_length` | `INTEGER` | `NOT NULL` | Số lượng từ trong phần mô tả tóm tắt (`description`). |
+
+**Chỉ mục tối ưu hóa (Indexes)**:
+- `idx_articles_category`: Tối ưu hóa các truy vấn `GROUP BY category` và lọc theo thể loại.
+- `idx_articles_author`: Tối ưu hóa truy vấn thống kê sản lượng bài viết theo tác giả.
+- `idx_articles_pubdate`: Hỗ trợ lọc và tổng hợp nhanh bài viết theo mốc thời gian.
+
+---
+
+### C. Hiệu năng Mô hình Phân loại Văn bản (Text Classification)
+- Tập dữ liệu: 655 bài báo, sử dụng Stratified Splitting (80% Huấn luyện, 20% Kiểm thử) trên các chuyên mục có từ 10 bài trở lên.
+- Trích xuất đặc trưng: TF-IDF với 4,000 từ khóa (n-gram 1-2).
+- Kết quả so sánh trên tập kiểm thử độc lập:
+
+| Thuật toán | Accuracy | Precision (Weighted) | Recall (Weighted) | Macro F1 | Weighted F1 | Đánh giá |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Linear SVM** | **83.21%** | **84.15%** | **83.21%** | **80.52%** | **81.66%** | Phân tách không gian đặc trưng thưa số chiều cao hiệu quả nhất |
+| Multinomial Naive Bayes | 77.10% | 77.58% | 77.10% | 75.12% | 75.19% | Phù hợp với giả định phân bố xác suất từ vựng |
+| Logistic Regression | 73.28% | 73.15% | 73.28% | 69.84% | 70.03% | Độ ổn định khá tốt |
+| Decision Tree | 52.67% | 53.40% | 52.67% | 51.10% | 51.46% | Dễ xảy ra hiện tượng quá khớp trên dữ liệu văn bản thưa |
+
+---
+
+### D. Hiệu năng Mô hình Hồi quy (Regression Analysis)
+- Biến mục tiêu: `word_count` (Số từ của nội dung bài báo).
+- Biến giải thích: Metadata xuất bản (`title_length`, `desc_length`, `publish_hour`, `publish_dayofweek`, `is_weekend`, One-Hot Encoding `category`).
+- Đảm bảo phòng chống rò rỉ dữ liệu (No Data Leakage): Không sử dụng các biến số phái sinh từ nội dung thân bài để làm đầu vào dự đoán.
+- Kết quả đo lường sai số:
+
+| Thuật toán Hồi quy | MAE (Số từ) | RMSE (Số từ) | Hệ số xác định $R^2$ |
+| :--- | :---: | :---: | :---: |
+| **Ridge Regression** | **306.18** | **441.09** | **0.1554** |
+| Linear Regression | 306.43 | 441.15 | 0.1552 |
+| Random Forest Regressor | 322.82 | 478.69 | 0.0053 |
+
+- **Nhận định thực nghiệm**: Hệ số $R^2 \approx 0.155$ phản ánh tính chất thực tế của dữ liệu báo chí: độ dài bài báo phụ thuộc chủ yếu vào quy mô diễn biến của sự kiện đời thực và ý đồ biên tập của phóng viên, các thông tin siêu dữ liệu chỉ giải thích được một phần biến thiên này.
 
 ---
 
 ## 5. GIỚI HẠN VÀ HƯỚNG PHÁT TRIỂN
-- Dữ liệu thu thập theo chu kỳ tuần (7 ngày) phản ánh nhịp độ tin tức tức thời.
-- Để nâng cao độ chính xác phân loại ngữ nghĩa tiếng Việt đa tầng, hướng phát triển tương lai có thể tích hợp mô hình ngôn ngữ tiền huấn luyện PhởBERT / Transformer.
+- Dữ liệu thu thập phản ánh chu kỳ tin tức trong khung thời gian 7 ngày.
+- Trong tương lai, mô hình phân loại có thể mở rộng thử nghiệm với các kiến trúc học sâu và mô hình ngôn ngữ tiếng Việt (như PhởBERT) để khai thác thêm thông tin ngữ cảnh.
