@@ -168,9 +168,39 @@ def generate_final_report_docx(base_dir=None):
     # 5. SQL ANALYSIS
     doc.add_heading("5. PHÂN TÍCH DỮ LIỆU BẰNG HỆ CSDL SQL (SQL Analysis)", level=1)
     doc.add_paragraph(
-        f"Kho dữ liệu quan hệ lưu trữ trọn vẹn {len(sql_data[0]['sample_data'])} bài viết sạch. 6 câu truy vấn nghiệp vụ "
-        "được thực thi và ghi nhận kết quả nhất quán:"
+        "Nhóm thiết kế mô hình Cơ sở dữ liệu quan hệ chuẩn mực gồm 3 bảng thực thể có khóa ngoại (Foreign Keys) liên kết chặt chẽ "
+        "và 18 cột trường thông tin đa dạng:\n"
+        "• Bảng 1: Categories (Chuyên mục) — category_id (PK), category_name, description.\n"
+        "• Bảng 2: Authors (Tác giả) — author_id (PK), author_name, role.\n"
+        "• Bảng 3: VnExpress_Articles (Bài viết) — article_id (PK), title, description, content, author, author_id (FK), "
+        "published_at, publish_date, publish_hour, publish_dayofweek, is_weekend, category, category_id (FK), subcategory, url, "
+        "word_count, title_length, desc_length.\n"
+        "Hệ thống tạo 3 chỉ mục (Indexes) hỗ trợ tối ưu hóa truy vấn: idx_articles_category, idx_articles_author, idx_articles_pubdate."
     )
+
+    doc.add_paragraph("Chi tiết cấu trúc lược đồ các bảng và cột dữ liệu:")
+    table_schema = doc.add_table(rows=4, cols=3)
+    table_schema.alignment = WD_TABLE_ALIGNMENT.CENTER
+    schema_headers = ["Tên Bảng (Table)", "Khóa chính / Khóa ngoại", "Các Cột & Trường Dữ Liệu"]
+    for i, h in enumerate(schema_headers):
+        cell = table_schema.cell(0, i)
+        cell.text = h
+        cell.paragraphs[0].runs[0].font.bold = True
+        set_cell_background(cell, "E2E9F0")
+
+    schema_rows = [
+        ("Categories", "PK: category_id", "category_name (TEXT, UNIQUE), description (TEXT)"),
+        ("Authors", "PK: author_id", "author_name (TEXT, UNIQUE), role (TEXT)"),
+        ("VnExpress_Articles", "PK: article_id\nFK: category_id, author_id", 
+         "title, description, content, author, author_id, published_at, publish_date, publish_hour, "
+         "publish_dayofweek, is_weekend, category, category_id, subcategory, url, word_count, title_length, desc_length")
+    ]
+    for r_idx, (tbl, pk_fk, cols) in enumerate(schema_rows, start=1):
+        table_schema.cell(r_idx, 0).text = tbl
+        table_schema.cell(r_idx, 1).text = pk_fk
+        table_schema.cell(r_idx, 2).text = cols
+
+    doc.add_paragraph("\nBộ 6 câu truy vấn SQL phân tích nghiệp vụ chuyên sâu kết hợp JOIN đa bảng:")
 
     for item in sql_data:
         p_q = doc.add_paragraph()

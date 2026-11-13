@@ -112,7 +112,38 @@ python run_all_pipeline.py
 - **Đặc trưng độ dài**: Ngắn nhất 51 từ, trung bình 746.2 từ, dài nhất 3,248 từ.
 - **Số lượng tác giả nhận diện**: 227 tác giả/bút danh độc nhất.
 
-### B. Hiệu năng Mô hình Phân loại Thể loại Báo chí (Text Classification)
+### B. Thiết kế Cơ sở Dữ liệu Quan hệ SQL (3 Bảng & 18 Cột)
+Kho dữ liệu quan hệ SQLite (`Phase 4 - SQL Analysis/vnexpress_analysis.db`) được thiết kế chuẩn mực dạng 3NF với 3 bảng có liên kết khóa ngoại (Foreign Keys) và chỉ mục (Indexes):
+- **Bảng 1: `Categories`**
+  - `category_id` (INTEGER, PK, AUTOINCREMENT): Định danh duy nhất cho chuyên mục.
+  - `category_name` (TEXT, UNIQUE, NOT NULL): Tên chuyên mục (Thời sự, Kinh doanh, Thể thao...).
+  - `description` (TEXT): Diễn giải thông tin chuyên mục.
+- **Bảng 2: `Authors`**
+  - `author_id` (INTEGER, PK, AUTOINCREMENT): Định danh duy nhất cho tác giả/phóng viên.
+  - `author_name` (TEXT, UNIQUE, NOT NULL): Tên hoặc bút danh của phóng viên.
+  - `role` (TEXT): Vai trò nghiệp vụ (Phóng viên chuyên trách / Tòa soạn tổng hợp).
+- **Bảng 3: `VnExpress_Articles`**
+  - `article_id` (TEXT, PK): Định danh bài viết bóc tách từ VnExpress.
+  - `title` (TEXT, NOT NULL): Tiêu đề bài viết.
+  - `description` (TEXT): Tóm tắt bài viết.
+  - `content` (TEXT, NOT NULL): Thân bài đầy đủ.
+  - `author` (TEXT, NOT NULL): Tên tác giả hiển thị.
+  - `author_id` (INTEGER, FK -> `Authors(author_id)`): Khóa ngoại liên kết bảng Authors.
+  - `published_at` (TEXT, NOT NULL): Thời gian xuất bản (YYYY-MM-DD HH:MM:SS).
+  - `publish_date` (TEXT, NOT NULL): Ngày xuất bản (YYYY-MM-DD).
+  - `publish_hour` (INTEGER, NOT NULL): Khung giờ đăng bài (0-23).
+  - `publish_dayofweek` (TEXT, NOT NULL): Thứ trong tuần.
+  - `is_weekend` (INTEGER, NOT NULL): Cờ đánh dấu cuối tuần (1: T7, CN; 0: T2-T6).
+  - `category` (TEXT, NOT NULL): Tên thể loại bài viết.
+  - `category_id` (INTEGER, FK -> `Categories(category_id)`): Khóa ngoại liên kết bảng Categories.
+  - `subcategory` (TEXT): Tiểu mục chi tiết.
+  - `url` (TEXT, NOT NULL): Liên kết bài viết gốc.
+  - `word_count` (INTEGER, NOT NULL): Số lượng từ của thân bài.
+  - `title_length` (INTEGER, NOT NULL): Số lượng từ của tiêu đề.
+  - `desc_length` (INTEGER, NOT NULL): Số lượng từ của phần tóm tắt.
+- **Chỉ mục tối ưu hóa (Indexes)**: `idx_articles_category`, `idx_articles_author`, `idx_articles_pubdate`.
+
+### C. Hiệu năng Mô hình Phân loại Thể loại Báo chí (Text Classification)
 - Mẫu dữ liệu sử dụng: 660 bài thuộc 16 lớp chuyên mục (Stratified Split: 528 bài train, 132 bài test).
 - Đặc trưng: TF-IDF 4,000 từ khóa quan trọng, n-gram (1, 2).
 - So sánh hiệu năng thực tế trên cùng tập kiểm thử:

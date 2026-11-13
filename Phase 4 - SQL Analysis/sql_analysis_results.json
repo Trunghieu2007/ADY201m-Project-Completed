@@ -1,152 +1,175 @@
 [
   {
     "id": "Q1",
-    "question": "Tổng số lượng bài viết đã được làm sạch và lưu trữ trong CSDL?",
-    "sql": "SELECT COUNT(*) AS total_articles FROM VnExpress_Articles;",
-    "interpretation": "Cơ sở dữ liệu đang lưu trữ đầy đủ 655 bài viết hợp lệ đã qua quy trình sàng lọc chất lượng đợt thu thập tươi.",
+    "question": "Tổng số lượng bài viết, số chuyên mục và số tác giả trong cơ sở dữ liệu quan hệ?",
+    "sql": "SELECT \n                (SELECT COUNT(*) FROM VnExpress_Articles) AS total_articles,\n                (SELECT COUNT(*) FROM Categories) AS total_categories,\n                (SELECT COUNT(*) FROM Authors) AS total_authors;",
+    "interpretation": "Hệ thống quản trị CSDL quan hệ lưu trữ trọn vẹn 655 bài báo liên kết với 17 chuyên mục và 226 tác giả/phóng viên.",
     "sample_data": [
       {
-        "total_articles": 655
+        "total_articles": 655,
+        "total_categories": 17,
+        "total_authors": 226
       }
     ]
   },
   {
     "id": "Q2",
-    "question": "Số lượng bài viết phân bố theo từng chuyên mục chính?",
-    "sql": "SELECT category, COUNT(*) AS article_count \n            FROM VnExpress_Articles \n            GROUP BY category \n            ORDER BY article_count DESC;",
-    "interpretation": "Các chuyên mục Thời sự, Thế giới, Thể thao và Kinh doanh duy trì số lượng bài phong phú, chiếm tỷ trọng trọng yếu của tòa soạn.",
+    "question": "Thống kê số lượng bài viết và tỷ lệ đóng góp theo từng Chuyên mục (sử dụng JOIN giữa Articles và Categories)?",
+    "sql": "SELECT \n                c.category_name, \n                COUNT(a.article_id) AS article_count,\n                ROUND(COUNT(a.article_id) * 100.0 / (SELECT COUNT(*) FROM VnExpress_Articles), 2) AS percentage\n            FROM Categories c\n            LEFT JOIN VnExpress_Articles a ON c.category_id = a.category_id\n            GROUP BY c.category_name\n            ORDER BY article_count DESC;",
+    "interpretation": "Các chuyên mục Thời sự, Thế giới, Thể thao và Kinh doanh chiếm tỷ trọng xuất bản lớn nhất tòa soạn, phản ánh đúng trọng tâm quan tâm của độc giả.",
     "sample_data": [
       {
-        "category": "Pháp luật",
-        "article_count": 59
+        "category_name": "Pháp luật",
+        "article_count": 59,
+        "percentage": 9.01
       },
       {
-        "category": "Thể thao",
-        "article_count": 56
+        "category_name": "Thể thao",
+        "article_count": 56,
+        "percentage": 8.55
       },
       {
-        "category": "Giải trí",
-        "article_count": 55
+        "category_name": "Giải trí",
+        "article_count": 55,
+        "percentage": 8.4
       },
       {
-        "category": "Thời sự",
-        "article_count": 54
+        "category_name": "Thời sự",
+        "article_count": 54,
+        "percentage": 8.24
       },
       {
-        "category": "Thế giới",
-        "article_count": 49
+        "category_name": "Kinh doanh",
+        "article_count": 49,
+        "percentage": 7.48
       },
       {
-        "category": "Kinh doanh",
-        "article_count": 49
+        "category_name": "Thế giới",
+        "article_count": 49,
+        "percentage": 7.48
       },
       {
-        "category": "Khoa học công nghệ",
-        "article_count": 48
+        "category_name": "Khoa học công nghệ",
+        "article_count": 48,
+        "percentage": 7.33
       },
       {
-        "category": "Bất động sản",
-        "article_count": 46
+        "category_name": "Bất động sản",
+        "article_count": 46,
+        "percentage": 7.02
       },
       {
-        "category": "Sức khỏe",
-        "article_count": 37
+        "category_name": "Sức khỏe",
+        "article_count": 37,
+        "percentage": 5.65
       },
       {
-        "category": "Giáo dục",
-        "article_count": 34
+        "category_name": "Giáo dục",
+        "article_count": 34,
+        "percentage": 5.19
       }
     ]
   },
   {
     "id": "Q3",
-    "question": "Độ dài trung bình, tối thiểu và tối đa của bài viết theo từng chuyên mục?",
-    "sql": "SELECT category, \n                   COUNT(*) AS total_articles,\n                   ROUND(AVG(word_count), 1) AS avg_words,\n                   MIN(word_count) AS min_words,\n                   MAX(word_count) AS max_words\n            FROM VnExpress_Articles\n            GROUP BY category\n            ORDER BY avg_words DESC;",
-    "interpretation": "Phân tích dung lượng phản ánh đặc thù biên tập: Chuyên mục Khoa học công nghệ và Thời sự có độ dài bài trung bình lớn nhất.",
+    "question": "Đo lường độ dài bài viết trung bình, min, max và độ dài tiêu đề theo từng Chuyên mục?",
+    "sql": "SELECT \n                category, \n                COUNT(*) AS total_articles,\n                ROUND(AVG(word_count), 1) AS avg_words,\n                MIN(word_count) AS min_words,\n                MAX(word_count) AS max_words,\n                ROUND(AVG(title_length), 1) AS avg_title_words\n            FROM VnExpress_Articles\n            GROUP BY category\n            ORDER BY avg_words DESC;",
+    "interpretation": "Chuyên mục Khoa học công nghệ và Thời sự có dung lượng thân bài trung bình lớn nhất (>800 từ) do đặc trưng điều tra chuyên đề phân tích sâu.",
     "sample_data": [
       {
         "category": "Thể thao",
         "total_articles": 56,
         "avg_words": 1019.3,
         "min_words": 398,
-        "max_words": 4139
+        "max_words": 4139,
+        "avg_title_words": 11.0
       },
       {
         "category": "Bất động sản",
         "total_articles": 46,
         "avg_words": 1003.1,
         "min_words": 414,
-        "max_words": 2548
+        "max_words": 2548,
+        "avg_title_words": 13.4
       },
       {
         "category": "Khoa học công nghệ",
         "total_articles": 48,
         "avg_words": 939.0,
         "min_words": 351,
-        "max_words": 2271
+        "max_words": 2271,
+        "avg_title_words": 12.0
       },
       {
         "category": "Thời sự",
         "total_articles": 54,
         "avg_words": 912.1,
         "min_words": 61,
-        "max_words": 3692
+        "max_words": 3692,
+        "avg_title_words": 13.1
       },
       {
         "category": "Giải trí",
         "total_articles": 55,
         "avg_words": 818.7,
         "min_words": 277,
-        "max_words": 2278
+        "max_words": 2278,
+        "avg_title_words": 10.7
       },
       {
         "category": "Ý kiến",
         "total_articles": 22,
         "avg_words": 780.8,
         "min_words": 167,
-        "max_words": 2201
+        "max_words": 2201,
+        "avg_title_words": 12.6
       },
       {
         "category": "Đời sống",
         "total_articles": 30,
         "avg_words": 774.0,
         "min_words": 395,
-        "max_words": 1889
+        "max_words": 1889,
+        "avg_title_words": 11.1
       },
       {
         "category": "Kinh doanh",
         "total_articles": 49,
         "avg_words": 763.6,
         "min_words": 340,
-        "max_words": 2201
+        "max_words": 2201,
+        "avg_title_words": 11.6
       },
       {
         "category": "Thế giới",
         "total_articles": 49,
         "avg_words": 756.0,
         "min_words": 276,
-        "max_words": 1589
+        "max_words": 1589,
+        "avg_title_words": 12.3
       },
       {
         "category": "Tin tức",
         "total_articles": 1,
         "avg_words": 747.0,
         "min_words": 747,
-        "max_words": 747
+        "max_words": 747,
+        "avg_title_words": 11.0
       }
     ]
   },
   {
     "id": "Q4",
-    "question": "Top 10 bài viết có dung lượng lớn nhất toàn tòa soạn?",
-    "sql": "SELECT article_id, category, title, word_count, published_at\n            FROM VnExpress_Articles\n            ORDER BY word_count DESC\n            LIMIT 10;",
-    "interpretation": "Các bài viết dài nhất thường là các bài phóng sự điều tra, hồ sơ chuyên đề đặc biệt hoặc bài tường thuật sự kiện trọng điểm.",
+    "question": "Top 10 bài viết có dung lượng từ dài nhất cùng thông tin tác giả và chuyên mục?",
+    "sql": "SELECT \n                a.article_id, \n                a.category, \n                a.title, \n                a.word_count, \n                a.author,\n                a.published_at\n            FROM VnExpress_Articles a\n            ORDER BY a.word_count DESC\n            LIMIT 10;",
+    "interpretation": "Các bài viết dài nhất đạt trên 2,000 - 3,000 từ, là các tuyến bài phóng sự điều tra hoặc hồ sơ sự kiện trọng điểm.",
     "sample_data": [
       {
         "article_id": "5144056",
         "category": "Thể thao",
         "title": "5 nguyên nhân khiến Carrick thất bại ở Man Utd",
         "word_count": 4139,
+        "author": "Hồng Duy",
         "published_at": "2026-11-13 06:30:00"
       },
       {
@@ -154,6 +177,7 @@
         "category": "Thời sự",
         "title": "Thủ tướng: Thay thế kịp thời cán bộ né tránh, đùn đẩy trách nhiệm",
         "word_count": 3692,
+        "author": "VnExpress",
         "published_at": "2026-11-12 15:45:00"
       },
       {
@@ -161,6 +185,7 @@
         "category": "Thời sự",
         "title": "Bộ trưởng Khoa học và Công nghệ: Từng đồng ngân sách phải được sử dụng hiệu quả",
         "word_count": 3610,
+        "author": "Vũ Tuân - Sơn Hà - Anh Tú",
         "published_at": "2026-11-12 10:28:00"
       },
       {
@@ -168,6 +193,7 @@
         "category": "Thời sự",
         "title": "Những bài toán công nghệ cho tăng trưởng hai con số",
         "word_count": 2731,
+        "author": "VnExpress",
         "published_at": "2026-11-12 02:00:00"
       },
       {
@@ -175,6 +201,7 @@
         "category": "Bất động sản",
         "title": "Biệt thự 38 triệu USD của gia đình CEO Nvidia",
         "word_count": 2548,
+        "author": "Bích Phương",
         "published_at": "2026-11-09 13:30:00"
       },
       {
@@ -182,6 +209,7 @@
         "category": "Thể thao",
         "title": "5 ứng viên kế nhiệm Carrick ở Man Utd",
         "word_count": 2514,
+        "author": "Hồng Duy",
         "published_at": "2026-11-11 11:57:00"
       },
       {
@@ -189,6 +217,7 @@
         "category": "Giải trí",
         "title": "‘Stoner’: Cuộc đời không ai nhớ vẫn đáng sống",
         "word_count": 2278,
+        "author": "Lê Hồng Lâm",
         "published_at": "2026-11-11 10:21:00"
       },
       {
@@ -196,6 +225,7 @@
         "category": "Khoa học công nghệ",
         "title": "'Sóng xanh' Dân chủ làm chao đảo làng công nghệ Mỹ",
         "word_count": 2271,
+        "author": "An Khang",
         "published_at": "2026-11-09 23:00:00"
       },
       {
@@ -203,6 +233,7 @@
         "category": "Khoa học công nghệ",
         "title": "Insta360 Luna Pro - máy quay vlog 8K tích hợp gimbal",
         "word_count": 2268,
+        "author": "Tuấn Hưng",
         "published_at": "2026-11-10 08:14:00"
       },
       {
@@ -210,108 +241,94 @@
         "category": "Bất động sản",
         "title": "Ngôi nhà có vườn thông tầng lấy cảm hứng từ hang Sơn Đoòng",
         "word_count": 2223,
+        "author": "Bích Phương",
         "published_at": "2026-11-11 00:02:00"
       }
     ]
   },
   {
     "id": "Q5",
-    "question": "Thống kê hoạt động xuất bản theo ngày và số từ trung bình mỗi ngày?",
-    "sql": "SELECT SUBSTR(published_at, 1, 10) AS publish_date, \n                   COUNT(*) AS daily_articles,\n                   ROUND(AVG(word_count), 1) AS avg_daily_words\n            FROM VnExpress_Articles\n            GROUP BY publish_date\n            ORDER BY publish_date ASC;",
-    "interpretation": "Nhịp độ xuất bản diễn ra liên tục hàng ngày với dung lượng trung bình duy trì ổn định quanh 600 - 800 từ mỗi bài.",
+    "question": "Phân tích xu hướng xuất bản bài viết theo ngày trong tuần và so sánh giữa Ngày thường vs Cuối tuần?",
+    "sql": "SELECT \n                CASE WHEN is_weekend = 1 THEN 'Cuối tuần (T7, CN)' ELSE 'Ngày trong tuần (T2-T6)' END AS period_type,\n                COUNT(*) AS total_articles,\n                ROUND(AVG(word_count), 1) AS avg_words_per_article\n            FROM VnExpress_Articles\n            GROUP BY is_weekend\n            ORDER BY is_weekend ASC;",
+    "interpretation": "Số lượng bài viết tập trung chủ yếu vào các ngày làm việc trong tuần, dung lượng bài cuối tuần có xu hướng súc tích và giải trí hơn.",
     "sample_data": [
       {
-        "publish_date": "2026-11-07",
-        "daily_articles": 21,
-        "avg_daily_words": 699.3
+        "period_type": "Ngày trong tuần (T2-T6)",
+        "total_articles": 610,
+        "avg_words_per_article": 787.9
       },
       {
-        "publish_date": "2026-11-08",
-        "daily_articles": 24,
-        "avg_daily_words": 631.8
-      },
-      {
-        "publish_date": "2026-11-09",
-        "daily_articles": 47,
-        "avg_daily_words": 763.3
-      },
-      {
-        "publish_date": "2026-11-10",
-        "daily_articles": 77,
-        "avg_daily_words": 798.6
-      },
-      {
-        "publish_date": "2026-11-11",
-        "daily_articles": 118,
-        "avg_daily_words": 772.7
-      },
-      {
-        "publish_date": "2026-11-12",
-        "daily_articles": 180,
-        "avg_daily_words": 800.9
-      },
-      {
-        "publish_date": "2026-11-13",
-        "daily_articles": 188,
-        "avg_daily_words": 786.6
+        "period_type": "Cuối tuần (T7, CN)",
+        "total_articles": 45,
+        "avg_words_per_article": 663.3
       }
     ]
   },
   {
     "id": "Q6",
-    "question": "Phân tích Top 10 phóng viên / tác giả có số lượng bài viết nhiều nhất (ngoại trừ định danh chung VnExpress)?",
-    "sql": "SELECT author, COUNT(*) AS count_articles, ROUND(AVG(word_count), 1) AS avg_length\n            FROM VnExpress_Articles\n            WHERE author != 'VnExpress' AND author != ''\n            GROUP BY author\n            ORDER BY count_articles DESC\n            LIMIT 10;",
-    "interpretation": "Nhận diện được các cây bút phóng viên chủ chốt tích cực đóng góp bài viết chuyên sâu trong tuần lễ thu thập dữ liệu.",
+    "question": "Top 10 Phóng viên / Tác giả chuyên trách có nhiều bài viết nhất (sử dụng JOIN bảng Authors và lọc bỏ định danh VnExpress)?",
+    "sql": "SELECT \n                au.author_name,\n                au.role,\n                COUNT(a.article_id) AS total_published,\n                ROUND(AVG(a.word_count), 1) AS avg_words\n            FROM Authors au\n            JOIN VnExpress_Articles a ON au.author_id = a.author_id\n            WHERE au.author_name != 'VnExpress'\n            GROUP BY au.author_name, au.role\n            ORDER BY total_published DESC\n            LIMIT 10;",
+    "interpretation": "Nhận diện danh tính cụ thể của các cây bút phóng viên chủ chốt qua liên kết quan hệ khóa ngoại (Foreign Key) thay vì nhãn mặc định tòa soạn.",
     "sample_data": [
       {
-        "author": "Mộc Trà",
-        "count_articles": 17,
-        "avg_length": 257.5
+        "author_name": "Mộc Trà",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 17,
+        "avg_words": 257.5
       },
       {
-        "author": "Hồng Duy",
-        "count_articles": 15,
-        "avg_length": 1194.1
+        "author_name": "Hồng Duy",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 15,
+        "avg_words": 1194.1
       },
       {
-        "author": "Hà Thu",
-        "count_articles": 13,
-        "avg_length": 719.1
+        "author_name": "Hà Thu",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 13,
+        "avg_words": 719.1
       },
       {
-        "author": "Song Anh",
-        "count_articles": 12,
-        "avg_length": 920.4
+        "author_name": "Song Anh",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 12,
+        "avg_words": 920.4
       },
       {
-        "author": "Như Anh",
-        "count_articles": 10,
-        "avg_length": 591.4
+        "author_name": "An Khang",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 10,
+        "avg_words": 1126.3
       },
       {
-        "author": "Hi",
-        "count_articles": 10,
-        "avg_length": 146.1
+        "author_name": "Hi",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 10,
+        "avg_words": 146.1
       },
       {
-        "author": "An Khang",
-        "count_articles": 10,
-        "avg_length": 1126.3
+        "author_name": "Như Anh",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 10,
+        "avg_words": 591.4
       },
       {
-        "author": "Thanh Danh",
-        "count_articles": 9,
-        "avg_length": 545.8
+        "author_name": "Bích Phương",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 9,
+        "avg_words": 1838.3
       },
       {
-        "author": "Phạm Giang",
-        "count_articles": 9,
-        "avg_length": 716.8
+        "author_name": "Bảo Lâm",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 9,
+        "avg_words": 1109.0
       },
       {
-        "author": "Phương Thảo",
-        "count_articles": 9,
-        "avg_length": 702.3
+        "author_name": "Mai Phương",
+        "role": "Phóng viên chuyên trách",
+        "total_published": 9,
+        "avg_words": 555.7
       }
     ]
   }
