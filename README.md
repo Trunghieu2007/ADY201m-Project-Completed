@@ -8,9 +8,9 @@ Báo cáo dự án môn học **Khoa học Dữ liệu Ứng dụng (ADY201m)** 
 
 | STT | Họ và Tên | Vai trò & Chức năng phụ trách | Trách nhiệm cụ thể trong dự án |
 | :---: | :--- | :--- | :--- |
-| **1** | **Phạm Hùng Dương** | **Kỹ sư Thu thập Dữ liệu (Data Engineer)** | - Thiết kế và vận hành module cào dữ liệu VnExpress (`Phase 1`).<br>- Xây dựng quy trình sàng lọc chất lượng, tiền xử lý và loại trừ dữ liệu rác (`Phase 2`). |
-| **2** | **Đinh Trung Hiếu** | **Chuyên viên Phân tích Dữ liệu (Data Analyst)** | - Khám phá và trực quan hóa dữ liệu thống kê mô tả (EDA) (`Phase 3`).<br>- Xây dựng mô hình Cơ sở dữ liệu Microsoft SQL Server (dbo.VnExpress_Articles) và thực thi truy vấn phân tích SQL (`Phase 4`). |
-| **3** | **Nguyễn Hữu Hùng** | **Kỹ sư Học máy (Machine Learning Engineer)** | - Trích xuất đặc trưng TF-IDF và huấn luyện mô hình Phân loại văn bản (`Phase 5`).<br>- Xây dựng mô hình Hồi quy dự đoán dung lượng bài viết từ siêu dữ liệu (`Phase 6`). |
+| **1** | **Phạm Hùng Dương (He210543)** | **Kỹ sư Thu thập Dữ liệu (Data Engineer)** | - Thiết kế và vận hành module cào dữ liệu VnExpress (`Phase 1`).<br>- Xây dựng quy trình sàng lọc chất lượng, tiền xử lý và loại trừ dữ liệu rác (`Phase 2`). |
+| **2** | **Đinh Trung Hiếu (He210442)** | **Chuyên viên Phân tích Dữ liệu (Data Analyst)** | - Khám phá và trực quan hóa dữ liệu thống kê mô tả (EDA) (`Phase 3`).<br>- Xây dựng mô hình Cơ sở dữ liệu Microsoft SQL Server (dbo.VnExpress_Articles) và thực thi truy vấn phân tích SQL (`Phase 4`). |
+| **3** | **Nguyễn Hữu Hùng (He210370)** | **Kỹ sư Học máy (Machine Learning Engineer)** | - Trích xuất đặc trưng TF-IDF và huấn luyện mô hình Phân loại văn bản (`Phase 5`).<br>- Xây dựng mô hình Hồi quy dự đoán dung lượng bài viết từ siêu dữ liệu (`Phase 6`). |
 
 ---
 
@@ -55,10 +55,10 @@ ADY201m-Project-Completed/
 │   └── bieu_do_5_top_tac_gia.png           # Biểu đồ Top 10 tác giả/phóng viên
 │
 ├── Phase 4 - SQL Analysis/
-│   ├── run_sql_analysis.py                 # Module khởi tạo và nạp dữ liệu vào CSDL (MSSQL / SQLite)
+│   ├── run_sql_analysis.py                 # Module khởi tạo CSDL và nạp dữ liệu vào Microsoft SQL Server (bảng dbo.VnExpress_Articles)
 │   ├── SQLschema.sql                       # Kịch bản T-SQL khởi tạo Database ADY201m và bảng dbo.VnExpress_Articles
 │   ├── DemoTruyVan.sql                     # Kịch bản 6 câu lệnh T-SQL phân tích dữ liệu mẫu
-│   └── vnexpress_analysis.db               # Cơ sở dữ liệu SQLite dự phòng cục bộ
+│   └── sql_analysis_results.json           # Kết quả thực thi bộ truy vấn T-SQL trên Microsoft SQL Server
 │
 ├── Phase 5 - Classification Modeling/
 │   ├── train_classifier.py                 # Module huấn luyện và đánh giá 4 mô hình phân loại
@@ -127,25 +127,25 @@ python "Phase 6 - Regression Modeling\train_regression.py"
 
 ### B. Thiết kế Cơ sở Dữ liệu SQL (Microsoft SQL Server & Bảng đơn `dbo.VnExpress_Articles`)
 
-Dự án sử dụng hệ quản trị cơ sở dữ liệu quan hệ **Microsoft SQL Server** (kết nối mặc định tới `localhost\SQLEXPRESS`, database `ADY201m`) qua giao thức ODBC (`pyodbc`). Hệ thống được thiết kế cơ chế dự phòng tự động (fallback) sang SQLite (`Phase 4 - SQL Analysis/vnexpress_analysis.db`) nếu môi trường máy trạm chưa cấu hình MSSQL.
+Dự án sử dụng hệ quản trị cơ sở dữ liệu quan hệ **Microsoft SQL Server** (kết nối trực tiếp tới `localhost\SQLEXPRESS`, database `ADY201m`) qua giao thức ODBC (`pyodbc`) với chuẩn T-SQL. Toàn bộ 655 bài báo sạch được lưu trữ và truy vấn hoàn toàn trên bảng `dbo.VnExpress_Articles` gồm 16 cột thuộc tính chuẩn hóa.
 
 Toàn bộ dữ liệu được tổ chức chuẩn hóa trong một bảng duy nhất `dbo.VnExpress_Articles` gồm 16 cột thuộc tính:
 
-| STT | Tên Cột (Column Name) | Kiểu Dữ Liệu (MSSQL) | Kiểu SQLite | Ràng Buộc | Ý Nghĩa Phân Tích & Chức Năng Nghiệp Vụ |
+| STT | Tên Cột (Column Name) | Kiểu Dữ Liệu (MSSQL) | Ràng Buộc | Ý Nghĩa Phân Tích & Chức Năng Nghiệp Vụ |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **1** | `article_id` | `VARCHAR(100)` | `TEXT` | `PRIMARY KEY` | Mã định danh duy nhất của bài viết được trích xuất từ liên kết bài báo VnExpress. |
-| **2** | `title` | `NVARCHAR(500)` | `TEXT` | `NOT NULL` | Tiêu đề bài viết, đại diện cho nội dung tóm lược ngắn gọn nhất. |
-| **3** | `description` | `NVARCHAR(MAX)` | `TEXT` | `NULL` | Phần mô tả tóm tắt (sapo) nằm đầu mỗi bài báo. |
-| **4** | `content` | `NVARCHAR(MAX)` | `TEXT` | `NOT NULL` | Toàn bộ văn bản thân bài báo (sau khi đã ghép các đoạn paragraph). |
-| **5** | `author` | `NVARCHAR(200)` | `TEXT` | `NOT NULL` | Tên tác giả hoặc bút danh phóng viên phụ trách bài viết. |
-| **6** | `published_at` | `DATETIME` | `TEXT` | `NOT NULL` | Mốc thời gian xuất bản bài viết theo định dạng chuẩn `YYYY-MM-DD HH:MM:SS`. |
-| **7** | `publish_date` | `DATE` | `TEXT` | `NOT NULL` | Ngày xuất bản bài viết (`YYYY-MM-DD`), phục vụ nhóm dữ liệu theo ngày. |
+| **1** | `article_id` | `VARCHAR(100)` | `PRIMARY KEY` | Mã định danh duy nhất của bài viết được trích xuất từ liên kết bài báo VnExpress. |
+| **2** | `title` | `NVARCHAR(500)` | `NOT NULL` | Tiêu đề bài viết, đại diện cho nội dung tóm lược ngắn gọn nhất. |
+| **3** | `description` | `NVARCHAR(MAX)` | `NULL` | Phần mô tả tóm tắt (sapo) nằm đầu mỗi bài báo. |
+| **4** | `content` | `NVARCHAR(MAX)` | `NOT NULL` | Toàn bộ văn bản thân bài báo (sau khi đã ghép các đoạn paragraph). |
+| **5** | `author` | `NVARCHAR(200)` | `NOT NULL` | Tên tác giả hoặc bút danh phóng viên phụ trách bài viết. |
+| **6** | `published_at` | `DATETIME` | `NOT NULL` | Mốc thời gian xuất bản bài viết theo định dạng chuẩn `YYYY-MM-DD HH:MM:SS`. |
+| **7** | `publish_date` | `DATE` | `NOT NULL` | Ngày xuất bản bài viết (`YYYY-MM-DD`), phục vụ nhóm dữ liệu theo ngày. |
 | **8** | `publish_hour` | `INT` | `INTEGER` | `NOT NULL` | Khung giờ xuất bản trong ngày (từ 0 đến 23), dùng để phân tích hoạt động theo giờ. |
-| **9** | `publish_dayofweek`| `NVARCHAR(20)` | `TEXT` | `NOT NULL` | Thứ trong tuần (`Monday`, `Tuesday`...), phục vụ phân tích xu hướng theo thứ. |
+| **9** | `publish_dayofweek`| `NVARCHAR(20)` | `NOT NULL` | Thứ trong tuần (`Monday`, `Tuesday`...), phục vụ phân tích xu hướng theo thứ. |
 | **10**| `is_weekend` | `TINYINT` | `INTEGER` | `NOT NULL` | Biến nhị phân đánh dấu ngày cuối tuần (1: Thứ Bảy/Chủ Nhật, 0: Ngày làm việc). |
-| **11**| `category` | `NVARCHAR(100)` | `TEXT` | `NOT NULL` | Chuyên mục tin tức chính (Thời sự, Kinh doanh, Thế giới, Thể thao...). |
-| **12**| `subcategory` | `NVARCHAR(100)` | `TEXT` | `NULL` | Tiểu mục chi tiết của chuyên mục chính (nếu có). |
-| **13**| `url` | `VARCHAR(500)` | `TEXT` | `NOT NULL` | Đường dẫn liên kết trực tiếp tới trang bài viết trên VnExpress. |
+| **11**| `category` | `NVARCHAR(100)` | `NOT NULL` | Chuyên mục tin tức chính (Thời sự, Kinh doanh, Thế giới, Thể thao...). |
+| **12**| `subcategory` | `NVARCHAR(100)` | `NULL` | Tiểu mục chi tiết của chuyên mục chính (nếu có). |
+| **13**| `url` | `VARCHAR(500)` | `NOT NULL` | Đường dẫn liên kết trực tiếp tới trang bài viết trên VnExpress. |
 | **14**| `word_count` | `INT` | `INTEGER` | `NOT NULL` | Tổng số lượng từ trong phần thân bài báo (`content`). |
 | **15**| `title_length` | `INT` | `INTEGER` | `NOT NULL` | Số lượng từ trong tiêu đề bài viết (`title`). |
 | **16**| `desc_length` | `INT` | `INTEGER` | `NOT NULL` | Số lượng từ trong phần mô tả tóm tắt (`description`). |
