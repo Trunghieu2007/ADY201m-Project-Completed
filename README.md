@@ -8,9 +8,9 @@ Báo cáo dự án môn học **Khoa học Dữ liệu Ứng dụng (ADY201m)** 
 
 | STT | Họ và Tên | Vai trò & Chức năng phụ trách | Trách nhiệm cụ thể trong dự án |
 | :---: | :--- | :--- | :--- |
-| **1** | **Phạm Hùng Dương (He210543)** | **Kỹ sư Thu thập Dữ liệu (Data Engineer)** | - Thiết kế và vận hành module cào dữ liệu VnExpress (`Phase 1`).<br>- Xây dựng quy trình sàng lọc chất lượng, tiền xử lý và loại trừ dữ liệu rác (`Phase 2`). |
-| **2** | **Đinh Trung Hiếu (He210442)** | **Chuyên viên Phân tích Dữ liệu (Data Analyst)** | - Khám phá và trực quan hóa dữ liệu thống kê mô tả (EDA) (`Phase 3`).<br>- Xây dựng mô hình Cơ sở dữ liệu Microsoft SQL Server (dbo.VnExpress_Articles) và thực thi truy vấn phân tích SQL (`Phase 4`). |
-| **3** | **Nguyễn Hữu Hùng (He210370)** | **Kỹ sư Học máy (Machine Learning Engineer)** | - Trích xuất đặc trưng TF-IDF và huấn luyện mô hình Phân loại văn bản (`Phase 5`).<br>- Xây dựng mô hình Hồi quy dự đoán dung lượng bài viết từ siêu dữ liệu (`Phase 6`). |
+| **1** | **Phạm Hùng Dương (He210543)** | ** Thu thập Dữ liệu (Data Engineer)** | - Thiết kế và vận hành module cào dữ liệu VnExpress (`Phase 1`).<br>- Xây dựng quy trình sàng lọc chất lượng, tiền xử lý và loại trừ dữ liệu rác (`Phase 2`). |
+| **2** | **Đinh Trung Hiếu (He210442)** | **Phân tích Dữ liệu (Data Analyst)** | - Khám phá và trực quan hóa dữ liệu thống kê mô tả (EDA) (`Phase 3`).<br>- Xây dựng mô hình Cơ sở dữ liệu Microsoft SQL Server (dbo.VnExpress_Articles) và thực thi truy vấn phân tích SQL (`Phase 4`). |
+| **3** | **Nguyễn Hữu Hùng (He210370)** | **Học máy (Machine Learning Engineer)** | - Trích xuất đặc trưng TF-IDF và huấn luyện mô hình Phân loại văn bản (`Phase 5`).<br>- Xây dựng mô hình Hồi quy dự đoán dung lượng bài viết từ siêu dữ liệu (`Phase 6`). |
 
 ---
 
