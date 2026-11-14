@@ -7901,10 +7901,13 @@ a.anchor-link {
 </ul>
 </li>
 <li><a href="#stage-4">4. Giai đoạn 4: Thu thập và tích hợp dữ liệu (Data Collection &amp; SQL Storage)</a><ul>
-<li><a href="#sub-4-1">4.1. Kiến trúc hệ thống Crawler RSS</a></li>
-<li><a href="#sub-4-2">4.2. Vai trò của Microsoft SQL Server trong giai đoạn Thu thập và Tích hợp</a></li>
-<li><a href="#sub-4-3">4.3. Lược đồ bảng và quy trình nạp dữ liệu vào Microsoft SQL Server</a></li>
-<li><a href="#sub-4-4">4.4. Trình bày và thực thi các câu truy vấn T-SQL phân tích nghiệp vụ</a></li>
+<li><a href="#sub-4-1">4.1. Kiến trúc hệ thống Crawler hai tầng (Two-Tier Architecture)</a></li>
+<li><a href="#sub-4-2">4.2. Tài liệu hóa các hàm chức năng và giải thuật bóc tách</a></li>
+<li><a href="#sub-4-3">4.3. Kiểm soát tải, xử lý ngoại lệ và tính chuẩn tắc thu thập</a></li>
+<li><a href="#sub-4-4">4.4. Thống kê vận hành thực tế và cấu trúc tệp dữ liệu thô</a></li>
+<li><a href="#sub-4-5">4.5. Vai trò của Microsoft SQL Server trong giai đoạn Thu thập và Tích hợp</a></li>
+<li><a href="#sub-4-6">4.6. Lược đồ bảng và quy trình nạp dữ liệu vào Microsoft SQL Server</a></li>
+<li><a href="#sub-4-7">4.7. Trình bày và thực thi các câu truy vấn T-SQL phân tích nghiệp vụ</a></li>
 </ul>
 </li>
 <li><a href="#stage-5">5. Giai đoạn 5: Thấu hiểu dữ liệu và Khám phá thống kê (Data Understanding &amp; EDA)</a><ul>
@@ -8281,14 +8284,247 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <hr/>
 <p><a id="stage-4"></a></p>
 <h1 id="4.-GIAI-%C4%90O%E1%BA%A0N-4:-THU-TH%E1%BA%ACP-V%C3%80-T%C3%8DCH-H%E1%BB%A2P-D%E1%BB%AE-LI%E1%BB%86U-(DATA-COLLECTION-&amp;-SQL-STORAGE)">4. GIAI ĐOẠN 4: THU THẬP VÀ TÍCH HỢP DỮ LIỆU (DATA COLLECTION &amp; SQL STORAGE)<a class="anchor-link" href="#4.-GIAI-%C4%90O%E1%BA%A0N-4:-THU-TH%E1%BA%ACP-V%C3%80-T%C3%8DCH-H%E1%BB%A2P-D%E1%BB%AE-LI%E1%BB%86U-(DATA-COLLECTION-&amp;-SQL-STORAGE)">¶</a></h1><p><a id="sub-4-1"></a></p>
-<h3 id="4.1.-Ki%E1%BA%BFn-tr%C3%BAc-h%E1%BB%87-th%E1%BB%91ng-Crawler-RSS">4.1. Kiến trúc hệ thống Crawler RSS<a class="anchor-link" href="#4.1.-Ki%E1%BA%BFn-tr%C3%BAc-h%E1%BB%87-th%E1%BB%91ng-Crawler-RSS">¶</a></h3><p>Hệ thống thu thập dữ liệu được thiết kế gồm 3 lớp chính:</p>
-<ul>
-<li><strong>Lớp 1: Khám phá luồng tin (Feed Discovery):</strong> Sử dụng thư viện <code>requests</code> và bộ phân tích cú pháp XML để đọc định kỳ 16 luồng RSS.</li>
-<li><strong>Lớp 2: Bóc tách cấu trúc trang tin (Page Scraper):</strong> Gửi HTTP request đến trang đích với <code>User-Agent</code> chuẩn của trình duyệt thông dụng, sử dụng <code>BeautifulSoup4</code> để điều hướng cây DOM.</li>
-<li><strong>Lớp 3: Chuẩn hóa &amp; Lưu trữ thô (Raw Storage):</strong> Trích xuất tác giả qua thẻ <code>p.author_mail</code>, <code>p.Normal[align=right]</code> hoặc câu cuối bài; lưu trữ toàn bộ dữ liệu thô vào tệp JSON (<code>vnexpress_raw.json</code>).</li>
-</ul>
+<h3 id="4.1.-Ki%E1%BA%BFn-tr%C3%BAc-h%E1%BB%87-th%E1%BB%91ng-Crawler-hai-t%E1%BA%A7ng-(Two-Tier-Crawler-Architecture)">4.1. Kiến trúc hệ thống Crawler hai tầng (Two-Tier Crawler Architecture)<a class="anchor-link" href="#4.1.-Ki%E1%BA%BFn-tr%C3%BAc-h%E1%BB%87-th%E1%BB%91ng-Crawler-hai-t%E1%BA%A7ng-(Two-Tier-Crawler-Architecture)">¶</a></h3><p>Hệ thống thu thập dữ liệu tự động được xây dựng độc lập tại tệp mã nguồn <a href="file:///c:/Users/Admin/Desktop/Misc/Miscs/ADY201m%20Final%20Completed/Phase%201%20-%20Data%20Collection/crawl_vnexpress.py">Phase 1 - Data Collection/crawl_vnexpress.py</a>. Để giải quyết bài toán cào dữ liệu quy mô hàng trăm bài báo trên 16 chuyên mục mà vẫn đảm bảo tính đại diện, tốc độ thu thập và tuân thủ chuẩn mực đạo đức thu thập web (web scraping ethics), hệ thống được thiết kế theo mô hình kiến trúc hai tầng (Two-tier Architecture):</p>
+<pre><code>                   [16 Luồng RSS VnExpress]
+                              │
+                              ▼  (Tầng 1: Feed Discovery)
+     ┌────────────────────────────────────────────────────────┐
+     │ collect_rss_urls()                                     │
+     │ - Quét 16 danh mục: thoi-su, the-gioi, kinh-doanh,... │
+     │ - Phân tích cú pháp XML (&lt;item&gt;, &lt;link&gt;, &lt;pubDate&gt;)    │
+     │ - Lọc bài viết trong 7 ngày gần nhất (CRAWL_DAYS = 7)   │
+     │ - Khử trùng lặp URL tại nguồn bằng Dictionary Key      │
+     └────────────────────────┬───────────────────────────────┘
+                              │
+                    [Danh sách URL độc nhất]
+                              │
+                              ▼  (Tầng 2: Page Scraping &amp; Extraction)
+     ┌────────────────────────────────────────────────────────┐
+     │ ThreadPoolExecutor(max_workers=8)                      │
+     │   ├── Worker 1: fetch(url) ──&gt; extract_article(html)   │
+     │   ├── Worker 2: fetch(url) ──&gt; extract_article(html)   │
+     │   └── Worker N: ...                                    │
+     │ - Gửi HTTP GET với headers chuẩn (User-Agent, Accept)  │
+     │ - Điều phối độ trễ REQUEST_DELAY = 0.05s để tránh nghẽn│
+     │ - Trích xuất DOM bằng BeautifulSoup:                   │
+     │     * Tiêu đề: h1.title-detail                         │
+     │     * Tóm tắt: p.description / meta[description]       │
+     │     * Thân bài: .fck_detail p.Normal                   │
+     │     * Tác giả: p.author_mail / strong cuối bài         │
+     │     * Phân cấp: ul.breadcrumb li a (Category, Subcat)  │
+     │     * Thời gian: span.date / normalize_datetime()      │
+     └────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼  (Lưu trữ thô)
+     ┌────────────────────────────────────────────────────────┐
+     │ Xuất dữ liệu JSON thô (vnexpress_raw.json)             │
+     │ - Cấu trúc mảng JSON, mã hóa chuẩn UTF-8                │
+     │ - Ghi nhận thêm: crawled_at, raw_word_count, og_type   │
+     └────────────────────────────────────────────────────────┘
+</code></pre>
+<h4 id="So-s%C3%A1nh-gi%E1%BA%A3i-ph%C3%A1p-RSS-first-so-v%E1%BB%9Bi-HTML-crawling-truy%E1%BB%81n-th%E1%BB%91ng:">So sánh giải pháp RSS-first so với HTML-crawling truyền thống:<a class="anchor-link" href="#So-s%C3%A1nh-gi%E1%BA%A3i-ph%C3%A1p-RSS-first-so-v%E1%BB%9Bi-HTML-crawling-truy%E1%BB%81n-th%E1%BB%91ng:">¶</a></h4><ol>
+<li><strong>Tiết kiệm tài nguyên mạng và băng thông:</strong> Thay vì duyệt đệ quy (recursive link crawling) qua hàng nghìn liên kết trên trang chủ và các trang con (dễ bị rơi vào vòng lặp vô tận hoặc cào phải liên kết quảng cáo rác), RSS cung cấp trực tiếp danh sách các bài viết mới nhất đã được máy chủ phân loại sẵn.</li>
+<li><strong>Xác định chính xác thời điểm xuất bản:</strong> Thẻ <code>&lt;pubDate&gt;</code> trong RSS theo định dạng RFC-822 / RFC-2822 cho phép bộ lọc thời gian (<code>cutoff_dt = now - 7 days</code>) loại bỏ ngay các bài cũ trước khi gửi yêu cầu tải nội dung HTML toàn văn.</li>
+<li><strong>Giảm thiểu tải trên máy chủ báo điện tử:</strong> Chỉ các bài báo thỏa mãn điều kiện thời gian và thuộc 16 chuyên mục chỉ định mới được gửi yêu cầu tải toàn văn HTML.</li>
+</ol>
+<hr/>
 <p><a id="sub-4-2"></a></p>
-<h3 id="4.2.-Vai-tr%C3%B2-c%E1%BB%A7a-Microsoft-SQL-Server-trong-giai-%C4%91o%E1%BA%A1n-Thu-th%E1%BA%ADp-v%C3%A0-T%C3%ADch-h%E1%BB%A3p-d%E1%BB%AF-li%E1%BB%87u">4.2. Vai trò của Microsoft SQL Server trong giai đoạn Thu thập và Tích hợp dữ liệu<a class="anchor-link" href="#4.2.-Vai-tr%C3%B2-c%E1%BB%A7a-Microsoft-SQL-Server-trong-giai-%C4%91o%E1%BA%A1n-Thu-th%E1%BA%ADp-v%C3%A0-T%C3%ADch-h%E1%BB%A3p-d%E1%BB%AF-li%E1%BB%87u">¶</a></h3><p>Theo phương pháp luận Khoa học Dữ liệu (CRISP-DM và đề cương môn học ADY201m):</p>
+<h3 id="4.2.-T%C3%A0i-li%E1%BB%87u-h%C3%B3a-c%C3%A1c-h%C3%A0m-ch%E1%BB%A9c-n%C4%83ng-v%C3%A0-gi%E1%BA%A3i-thu%E1%BA%ADt-b%C3%B3c-t%C3%A1ch-(Component-Documentation)">4.2. Tài liệu hóa các hàm chức năng và giải thuật bóc tách (Component Documentation)<a class="anchor-link" href="#4.2.-T%C3%A0i-li%E1%BB%87u-h%C3%B3a-c%C3%A1c-h%C3%A0m-ch%E1%BB%A9c-n%C4%83ng-v%C3%A0-gi%E1%BA%A3i-thu%E1%BA%ADt-b%C3%B3c-t%C3%A1ch-(Component-Documentation)">¶</a></h3><p>Toàn bộ logic thu thập dữ liệu được module hóa thành các hàm chuyên biệt trong <code>crawl_vnexpress.py</code>:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Tên hàm</th>
+<th style="text-align:left">Tham số đầu vào</th>
+<th style="text-align:left">Kết quả trả về</th>
+<th style="text-align:left">Mục đích và cơ chế hoạt động</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>fetch(url)</code></td>
+<td style="text-align:left"><code>url (str)</code></td>
+<td style="text-align:left"><code>html_text (str)</code></td>
+<td style="text-align:left">Gửi yêu cầu HTTP GET bằng thư viện <code>requests</code>, thiết lập <code>TIMEOUT = 12s</code>, áp dụng <code>REQUEST_DELAY = 0.05s</code> để kiểm soát tần suất, bắt lỗi mất kết nối và đảm bảo giải mã bảng mã chuẩn <code>utf-8</code>.</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>normalize_datetime(raw)</code></td>
+<td style="text-align:left"><code>raw (str)</code></td>
+<td style="text-align:left"><code>dt_str (str / None)</code></td>
+<td style="text-align:left">Áp dụng biểu thức chính quy (Regex) đa mẫu để phân tích chuỗi ngày giờ từ VnExpress: nhận diện định dạng chuẩn ISO <code>YYYY-MM-DD HH:MM</code> hoặc định dạng tiếng Việt <code>DD/MM/YYYY - HH:MM</code>, chuẩn hóa về dạng thống nhất <code>YYYY-MM-DD HH:MM:SS</code>.</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>extract_author(soup)</code></td>
+<td style="text-align:left"><code>soup (BeautifulSoup)</code></td>
+<td style="text-align:left"><code>author_name (str)</code></td>
+<td style="text-align:left">Giải thuật phân tầng trích xuất danh tính tác giả: (1) Tìm thẻ <code>&lt;p class="author_mail"&gt;</code> hoặc <code>&lt;p class="author"&gt;</code>; (2) Nếu khuyết, tìm thẻ chữ đậm <code>&lt;strong&gt;</code> cuối cùng trong thẻ thân bài <code>.fck_detail</code> (quy ước của VnExpress khi để tên phóng viên ở cuối bài); (3) Tìm thẻ <code>&lt;meta name="author"&gt;</code>; (4) Gán giá trị mặc định là <code>"VnExpress"</code> nếu không có thông tin cá nhân.</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>extract_article(...)</code></td>
+<td style="text-align:left"><code>html, url, fallback_date, cat</code></td>
+<td style="text-align:left"><code>dict</code></td>
+<td style="text-align:left">Bóc tách toàn diện 12 trường thông tin: ID bài viết (từ meta <code>tt_article_id</code> hoặc URL regex), tiêu đề (<code>h1.title-detail</code>), mô tả tóm tắt (<code>p.description</code>), nội dung bài viết (nối tất cả đoạn văn bản <code>.fck_detail p.Normal</code>), phân cấp chuyên mục chính/phụ từ breadcrumb, số từ thô (<code>raw_word_count</code>) và thời điểm cào (<code>crawled_at</code>).</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>collect_rss_urls()</code></td>
+<td style="text-align:left">Không</td>
+<td style="text-align:left"><code>dict: {url: (pub_date, cat)}</code></td>
+<td style="text-align:left">Quét tuần tự 16 kênh RSS, phân tích cú pháp XML bằng parser <code>xml</code>, lọc bỏ các liên kết không có đuôi <code>.html</code> và các bài nằm ngoài khoảng thời gian 7 ngày qua <code>parsedate_to_datetime</code>. Lưu trữ trong <code>dict</code> nhằm tự động triệt tiêu các URL bị đăng chéo giữa nhiều chuyên mục.</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>crawl_fresh_batch(...)</code></td>
+<td style="text-align:left"><code>output_path (str)</code></td>
+<td style="text-align:left"><code>output_path (str)</code></td>
+<td style="text-align:left">Khởi tạo nhóm luồng xử lý đồng thời (<code>ThreadPoolExecutor(max_workers=8)</code>), ánh xạ danh sách bài báo cần cào tới các tiểu trình xử lý độc lập, theo dõi tiến độ và lưu trữ tệp JSON thô.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Chi-ti%E1%BA%BFt-gi%E1%BA%A3i-thu%E1%BA%ADt-tr%C3%ADch-xu%E1%BA%A5t-c%E1%BA%A5u-tr%C3%BAc-v%C4%83n-b%E1%BA%A3n-(HTML-Parsing-Logic):">Chi tiết giải thuật trích xuất cấu trúc văn bản (HTML Parsing Logic):<a class="anchor-link" href="#Chi-ti%E1%BA%BFt-gi%E1%BA%A3i-thu%E1%BA%ADt-tr%C3%ADch-xu%E1%BA%A5t-c%E1%BA%A5u-tr%C3%BAc-v%C4%83n-b%E1%BA%A3n-(HTML-Parsing-Logic):">¶</a></h4><ol>
+<li><strong>Xử lý Breadcrumb:</strong> VnExpress tổ chức phân cấp bài báo thông qua danh sách <code>ul.breadcrumb li a</code>. Hệ thống bóc tách danh sách này và loại bỏ phần tử <code>"trang chủ"</code>. Phần tử đầu tiên được xác định là Chuyên mục chính (<code>category</code>), phần tử thứ hai (nếu có) được xác định là Chuyên mục phụ (<code>subcategory</code>), giúp phân loại sâu sắc hơn so với nhãn tĩnh từ RSS.</li>
+<li><strong>Xử lý nội dung thân bài và loại bỏ rác giao diện:</strong> Toàn bộ nội dung bài báo nằm trong vùng chọn <code>.fck_detail p.Normal, .fck_detail p, article p</code>. Việc chỉ trích xuất các thẻ đoạn văn bản này giúp hệ thống tự động loại bỏ các đoạn quảng cáo chèn giữa trang, video embed, bảng số liệu biểu đồ hoặc danh sách bài viết liên quan (vốn nằm ngoài thẻ <code>p.Normal</code>).</li>
+</ol>
+<hr/>
+<p><a id="sub-4-3"></a></p>
+<h3 id="4.3.-Ki%E1%BB%83m-so%C3%A1t-t%E1%BA%A3i,-x%E1%BB%AD-l%C3%BD-ngo%E1%BA%A1i-l%E1%BB%87-v%C3%A0-t%C3%ADnh-chu%E1%BA%A9n-t%E1%BA%AFc-thu-th%E1%BA%ADp-(Politeness-&amp;-Robustness)">4.3. Kiểm soát tải, xử lý ngoại lệ và tính chuẩn tắc thu thập (Politeness &amp; Robustness)<a class="anchor-link" href="#4.3.-Ki%E1%BB%83m-so%C3%A1t-t%E1%BA%A3i,-x%E1%BB%AD-l%C3%BD-ngo%E1%BA%A1i-l%E1%BB%87-v%C3%A0-t%C3%ADnh-chu%E1%BA%A9n-t%E1%BA%AFc-thu-th%E1%BA%ADp-(Politeness-&amp;-Robustness)">¶</a></h3><p>Để đảm bảo quá trình thu thập diễn ra an toàn, không gây quá tải cho hệ thống VnExpress và không bị chặn IP:</p>
+<ol>
+<li><strong>Tuân thủ User-Agent và Headers tiêu chuẩn:</strong><ul>
+<li>Script gửi tiêu đề HTTP <code>User-Agent</code> mô phỏng đầy đủ trình duyệt Google Chrome trên hệ điều hành Windows (<code>Mozilla/5.0 ... Chrome/124.0.0.0 Safari/537.36</code>), đi kèm các tiêu đề chấp nhận ngôn ngữ <code>Accept-Language: vi,en-US;q=0.9</code>. Điều này giúp máy chủ VnExpress phân phát đúng phiên bản giao diện tiếng Việt gốc.</li>
+</ul>
+</li>
+<li><strong>Cơ chế giới hạn tần suất (Rate Limiting &amp; Politeness Delay):</strong><ul>
+<li>Áp dụng độ trễ điều phối chủ động <code>REQUEST_DELAY = 0.05</code> giây giữa các phiên kết nối.</li>
+<li>Giới hạn số lượng tiến trình đồng thời tối đa là 8 workers (<code>ThreadPoolExecutor(max_workers=8)</code>). Tỷ lệ này đảm bảo cân bằng tối ưu giữa thông lượng thu thập (thu thập xong hơn 600 bài báo trong chưa đầy 30 giây) và tính tôn trọng tài nguyên máy chủ đích.</li>
+</ul>
+</li>
+<li><strong>Quản lý thời gian chờ (Timeout) và chịu lỗi (Fault Tolerance):</strong><ul>
+<li>Thiết lập ngưỡng <code>TIMEOUT = 12</code> giây cho mỗi phiên gọi HTTP. Nếu một yêu cầu gặp sự cố mạng (network lag) hoặc máy chủ không phản hồi, ngoại lệ <code>requests.RequestException</code> được bắt và xử lý an toàn, trả về chuỗi rỗng để luồng không bị đóng băng.</li>
+<li>Cơ chế ngày xuất bản dự phòng (<code>fallback_date</code>): Nếu trang HTML chi tiết không chứa thẻ ngày xuất bản hợp lệ do thay đổi giao diện, hệ thống tự động lấy ngày xuất bản trích xuất từ thẻ <code>&lt;pubDate&gt;</code> của luồng RSS để bảo toàn dữ liệu.</li>
+</ul>
+</li>
+</ol>
+<hr/>
+<p><a id="sub-4-4"></a></p>
+<h3 id="4.4.-Th%E1%BB%91ng-k%C3%AA-v%E1%BA%ADn-h%C3%A0nh-th%E1%BB%B1c-t%E1%BA%BF-v%C3%A0-c%E1%BA%A5u-tr%C3%BAc-t%E1%BB%87p-d%E1%BB%AF-li%E1%BB%87u-th%C3%B4-(vnexpress_raw.json)">4.4. Thống kê vận hành thực tế và cấu trúc tệp dữ liệu thô (vnexpress_raw.json)<a class="anchor-link" href="#4.4.-Th%E1%BB%91ng-k%C3%AA-v%E1%BA%ADn-h%C3%A0nh-th%E1%BB%B1c-t%E1%BA%BF-v%C3%A0-c%E1%BA%A5u-tr%C3%BAc-t%E1%BB%87p-d%E1%BB%AF-li%E1%BB%87u-th%C3%B4-(vnexpress_raw.json)">¶</a></h3><p>Quá trình chạy thực nghiệm của crawler đã ghi nhận các chỉ số vận hành thực tế như sau:</p>
+<ul>
+<li><strong>Thời gian chạy toàn diện:</strong> ~24.5 giây cho toàn bộ 16 chuyên mục.</li>
+<li><strong>Tổng số liên kết độc nhất phát hiện qua RSS:</strong> 660 bài báo.</li>
+<li><strong>Số bài báo bóc tách thành công nội dung toàn văn:</strong> 660 bài báo (tỷ lệ thành công 100%).</li>
+<li><strong>Dung lượng tệp dữ liệu thô (<code>vnexpress_raw.json</code>):</strong> 3.59 MB (chứa đầy đủ các trường nguyên bản, phục vụ quá trình tiền xử lý ở Giai đoạn 6).</li>
+</ul>
+<p>Đoạn mã bên dưới thực hiện kiểm tra cấu trúc của tệp dữ liệu thô vừa thu thập:</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=87a99db1">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="cm-editor cm-s-jupyter">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">raw_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"Phase 1 - Data Collection"</span><span class="p">,</span> <span class="s2">"vnexpress_raw.json"</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">raw_path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">raw_path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">raw_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[*] Đã tải tệp dữ liệu thô: </span><span class="si">{</span><span class="n">raw_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[+] Số lượng bài viết thô thu thập được: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> bài viết"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[+] Danh sách trường dữ liệu thô: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    
+    <span class="c1"># Hiển thị mẫu 2 bản ghi đầu tiên dưới dạng DataFrame thu gọn</span>
+    <span class="n">df_raw_sample</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">raw_data</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">df_raw_sample</span><span class="p">[[</span><span class="s1">'article_id'</span><span class="p">,</span> <span class="s1">'title'</span><span class="p">,</span> <span class="s1">'category'</span><span class="p">,</span> <span class="s1">'subcategory'</span><span class="p">,</span> <span class="s1">'author'</span><span class="p">,</span> <span class="s1">'published_at'</span><span class="p">,</span> <span class="s1">'raw_word_count'</span><span class="p">]])</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[!] Không tìm thấy tệp </span><span class="si">{</span><span class="n">raw_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>[*] Đã tải tệp dữ liệu thô: Phase 1 - Data Collection\vnexpress_raw.json
+[+] Số lượng bài viết thô thu thập được: 672 bài viết
+[+] Danh sách trường dữ liệu thô: ['article_id', 'title', 'description', 'content', 'author', 'published_at', 'category', 'subcategory', 'url', 'og_type', 'raw_word_count', 'crawled_at']
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>article_id</th>
+<th>title</th>
+<th>category</th>
+<th>subcategory</th>
+<th>author</th>
+<th>published_at</th>
+<th>raw_word_count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>5144462</td>
+<td>Chủ tịch và Phó chủ tịch UBND tỉnh Tuyên Quang...</td>
+<td>Thời sự</td>
+<td>Chính trị</td>
+<td>VnExpress</td>
+<td>2026-11-13 19:14:00</td>
+<td>896</td>
+</tr>
+<tr>
+<th>1</th>
+<td>5144465</td>
+<td>Hai nguyên lãnh đạo Bình Phước 'vi phạm gây hậ...</td>
+<td>Thời sự</td>
+<td>Chính trị</td>
+<td>Vũ Tuân</td>
+<td>2026-11-13 19:45:00</td>
+<td>556</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3c37773d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<hr/>
+<p><a id="sub-4-5"></a></p>
+<h3 id="4.5.-Vai-tr%C3%B2-c%E1%BB%A7a-Microsoft-SQL-Server-trong-giai-%C4%91o%E1%BA%A1n-Thu-th%E1%BA%ADp-v%C3%A0-T%C3%ADch-h%E1%BB%A3p-d%E1%BB%AF-li%E1%BB%87u">4.5. Vai trò của Microsoft SQL Server trong giai đoạn Thu thập và Tích hợp dữ liệu<a class="anchor-link" href="#4.5.-Vai-tr%C3%B2-c%E1%BB%A7a-Microsoft-SQL-Server-trong-giai-%C4%91o%E1%BA%A1n-Thu-th%E1%BA%ADp-v%C3%A0-T%C3%ADch-h%E1%BB%A3p-d%E1%BB%AF-li%E1%BB%87u">¶</a></h3><p>Theo phương pháp luận Khoa học Dữ liệu (CRISP-DM và đề cương môn học ADY201m):</p>
 <blockquote>
 <p><em>Giai đoạn 4: Thu thập và tích hợp dữ liệu (Data Collection) — Thu thập từ Database, CSV, JSON, Web... Dùng SQL để trích xuất, lọc, tổng hợp và kết nối dữ liệu trước khi chuyển sang Python.</em></p>
 </blockquote>
@@ -8304,8 +8540,8 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 </li>
 <li><strong>Cung cấp danh mục truy vấn nghiệp vụ độc lập (Analytical Query Catalog):</strong> Đóng gói bộ kịch bản T-SQL có cấu trúc (<a href="file:///c:/Users/Admin/Desktop/Misc/Miscs/ADY201m%20Final%20Completed/Phase%204%20-%20SQL%20Analysis/DemoTruyVan.sql">DemoTruyVan.sql</a>) để chuyên viên phân tích hoặc giảng viên có thể mở trực tiếp trong SQL Server Management Studio (SSMS) / Azure Data Studio để kiểm tra nghiệp vụ độc lập mà không phụ thuộc vào code Python.</li>
 </ol>
-<p><a id="sub-4-3"></a></p>
-<h3 id="4.3.-L%C6%B0%E1%BB%A3c-%C4%91%E1%BB%93-b%E1%BA%A3ng-v%C3%A0-quy-tr%C3%ACnh-n%E1%BA%A1p-d%E1%BB%AF-li%E1%BB%87u-v%C3%A0o-Microsoft-SQL-Server">4.3. Lược đồ bảng và quy trình nạp dữ liệu vào Microsoft SQL Server<a class="anchor-link" href="#4.3.-L%C6%B0%E1%BB%A3c-%C4%91%E1%BB%93-b%E1%BA%A3ng-v%C3%A0-quy-tr%C3%ACnh-n%E1%BA%A1p-d%E1%BB%AF-li%E1%BB%87u-v%C3%A0o-Microsoft-SQL-Server">¶</a></h3><p>Toàn bộ quy trình nạp dữ liệu được thực thi trong script <a href="file:///c:/Users/Admin/Desktop/Misc/Miscs/ADY201m%20Final%20Completed/Phase%204%20-%20SQL%20Analysis/run_sql_analysis.py">run_sql_analysis.py</a>. Script này thực hiện:</p>
+<p><a id="sub-4-6"></a></p>
+<h3 id="4.6.-L%C6%B0%E1%BB%A3c-%C4%91%E1%BB%93-b%E1%BA%A3ng-v%C3%A0-quy-tr%C3%ACnh-n%E1%BA%A1p-d%E1%BB%AF-li%E1%BB%87u-v%C3%A0o-Microsoft-SQL-Server">4.6. Lược đồ bảng và quy trình nạp dữ liệu vào Microsoft SQL Server<a class="anchor-link" href="#4.6.-L%C6%B0%E1%BB%A3c-%C4%91%E1%BB%93-b%E1%BA%A3ng-v%C3%A0-quy-tr%C3%ACnh-n%E1%BA%A1p-d%E1%BB%AF-li%E1%BB%87u-v%C3%A0o-Microsoft-SQL-Server">¶</a></h3><p>Toàn bộ quy trình nạp dữ liệu được thực thi trong script <a href="file:///c:/Users/Admin/Desktop/Misc/Miscs/ADY201m%20Final%20Completed/Phase%204%20-%20SQL%20Analysis/run_sql_analysis.py">run_sql_analysis.py</a>. Script này thực hiện:</p>
 <ul>
 <li>Kết nối tới dịch vụ Microsoft SQL Server cục bộ (<code>localhost\SQLEXPRESS</code>).</li>
 <li>Khởi tạo Database <code>ADY201m</code> (nếu chưa tồn tại).</li>
@@ -8321,7 +8557,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyodbc</span>
@@ -8373,7 +8609,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[1]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8470,8 +8706,8 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p><a id="sub-4-4"></a></p>
-<h3 id="4.4.-Tr%C3%ACnh-b%C3%A0y-v%C3%A0-th%E1%BB%B1c-thi-c%C3%A1c-c%C3%A2u-truy-v%E1%BA%A5n-T-SQL-ph%C3%A2n-t%C3%ADch-nghi%E1%BB%87p-v%E1%BB%A5">4.4. Trình bày và thực thi các câu truy vấn T-SQL phân tích nghiệp vụ<a class="anchor-link" href="#4.4.-Tr%C3%ACnh-b%C3%A0y-v%C3%A0-th%E1%BB%B1c-thi-c%C3%A1c-c%C3%A2u-truy-v%E1%BA%A5n-T-SQL-ph%C3%A2n-t%C3%ADch-nghi%E1%BB%87p-v%E1%BB%A5">¶</a></h3><p>Bộ kịch bản T-SQL phân tích nghiệp vụ được thiết kế độc lập tại tệp <a href="file:///c:/Users/Admin/Desktop/Misc/Miscs/ADY201m%20Final%20Completed/Phase%204%20-%20SQL%20Analysis/DemoTruyVan.sql">Phase 4 - SQL Analysis/DemoTruyVan.sql</a>. Dưới đây là tài liệu hóa chi tiết từng câu lệnh T-SQL nghiệp vụ và ô mã thực thi trực tiếp trên Microsoft SQL Server để người chấm dễ dàng theo dõi:</p>
+<p><a id="sub-4-7"></a></p>
+<h3 id="4.7.-Tr%C3%ACnh-b%C3%A0y-v%C3%A0-th%E1%BB%B1c-thi-c%C3%A1c-c%C3%A2u-truy-v%E1%BA%A5n-T-SQL-ph%C3%A2n-t%C3%ADch-nghi%E1%BB%87p-v%E1%BB%A5">4.7. Trình bày và thực thi các câu truy vấn T-SQL phân tích nghiệp vụ<a class="anchor-link" href="#4.7.-Tr%C3%ACnh-b%C3%A0y-v%C3%A0-th%E1%BB%B1c-thi-c%C3%A1c-c%C3%A2u-truy-v%E1%BA%A5n-T-SQL-ph%C3%A2n-t%C3%ADch-nghi%E1%BB%87p-v%E1%BB%A5">¶</a></h3><p>Bộ kịch bản T-SQL phân tích nghiệp vụ được thiết kế độc lập tại tệp <a href="file:///c:/Users/Admin/Desktop/Misc/Miscs/ADY201m%20Final%20Completed/Phase%204%20-%20SQL%20Analysis/DemoTruyVan.sql">Phase 4 - SQL Analysis/DemoTruyVan.sql</a>. Dưới đây là tài liệu hóa chi tiết từng câu lệnh T-SQL nghiệp vụ và ô mã thực thi trực tiếp trên Microsoft SQL Server để người chấm dễ dàng theo dõi:</p>
 </div>
 </div>
 </div>
@@ -8493,7 +8729,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Thực thi truy vấn Q1 trên Microsoft SQL Server</span>
@@ -8513,13 +8749,13 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_7740\2083031778.py:3: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_5992\2083031778.py:3: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   res_q1 = pd.read_sql_query("SELECT COUNT(*) AS total_articles FROM dbo.VnExpress_Articles;", conn)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[2]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8577,7 +8813,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Thực thi truy vấn Q2 trên Microsoft SQL Server</span>
@@ -8606,13 +8842,13 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_7740\30665015.py:12: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_5992\30665015.py:12: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   res_q2 = pd.read_sql_query(q2_sql, conn)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8719,7 +8955,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Thực thi truy vấn Q3 trên Microsoft SQL Server</span>
@@ -8751,13 +8987,13 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_7740\3401392029.py:15: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_5992\3401392029.py:15: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   res_q3 = pd.read_sql_query(q3_sql, conn)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[4]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8890,7 +9126,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Thực thi truy vấn Q4 trên Microsoft SQL Server</span>
@@ -8921,13 +9157,13 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_7740\272939520.py:14: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_5992\272939520.py:14: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   res_q4 = pd.read_sql_query(q4_sql, conn)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9031,7 +9267,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Thực thi truy vấn Q5 trên Microsoft SQL Server</span>
@@ -9060,13 +9296,13 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_7740\2315596393.py:12: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_5992\2315596393.py:12: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   res_q5 = pd.read_sql_query(q5_sql, conn)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[6]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9135,7 +9371,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Thực thi truy vấn Q6 trên Microsoft SQL Server</span>
@@ -9165,13 +9401,13 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_7740\1305833319.py:13: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+<pre>C:\Users\Admin\AppData\Local\Temp\ipykernel_5992\1305833319.py:13: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
   res_q6 = pd.read_sql_query(q6_sql, conn)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[7]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9271,7 +9507,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -9328,7 +9564,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9399,7 +9635,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [9]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">num_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'word_count'</span><span class="p">,</span> <span class="s1">'title_length'</span><span class="p">,</span> <span class="s1">'desc_length'</span><span class="p">,</span> <span class="s1">'publish_hour'</span><span class="p">]</span>
@@ -9417,7 +9653,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[9]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -9542,7 +9778,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">cat_counts</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'category'</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
@@ -9613,7 +9849,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [11]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">hour_counts</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'publish_hour'</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
@@ -9656,7 +9892,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [12]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Ma trận bảng chéo giữa Thứ trong tuần và Khung giờ</span>
@@ -9724,7 +9960,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
@@ -9762,7 +9998,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Độ dài trung bình theo chuyên mục</span>
@@ -9841,7 +10077,7 @@ Thu thập &amp; chuẩn hóa   Phân tích thống kê    Huấn luyện mô h�
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Lọc bỏ nhãn tòa soạn chung và tác giả khuyết</span>
@@ -9917,7 +10153,7 @@ Thuật toán trích xuất tác giả đã nhận diện thành công <strong>2
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">QUALITY_REPORT_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"Phase 2 - Data Preprocessing &amp; Quality"</span><span class="p">,</span> <span class="s2">"data_quality_report.json"</span><span class="p">)</span>
@@ -10086,7 +10322,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [17]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
@@ -10162,7 +10398,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[17]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[18]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -10234,7 +10470,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Trực quan hóa so sánh 4 mô hình phân loại</span>
@@ -10283,7 +10519,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Ma trận nhầm lẫn (Confusion Matrix) của mô hình tốt nhất: Linear SVM</span>
@@ -10376,7 +10612,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRegression</span><span class="p">,</span> <span class="n">Ridge</span>
@@ -10435,7 +10671,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[20]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[21]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -10491,7 +10727,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [21]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Trực quan hóa giá trị Thực tế vs Dự đoán và Đồ thị phần dư (Residuals Plot) cho mô hình Ridge Regression</span>
@@ -10630,7 +10866,7 @@ Kiểm tra giá trị Null trên 8 trường chính:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [22]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [23]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">report_dict</span> <span class="o">=</span> <span class="n">classification_report</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions</span><span class="p">[</span><span class="s2">"Linear SVM"</span><span class="p">],</span> <span class="n">output_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">zero_division</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
